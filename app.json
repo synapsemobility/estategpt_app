@@ -1,28 +1,53 @@
 {
   "expo": {
-    "name": "estategpt_app",
-    "slug": "estategpt_app",
-    "version": "1.0.0",
+    "name": "EstateGPT",
+    "slug": "estategpt",
+    "version": "1.84",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/logo.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/logo.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.synapsemobility.synapse-v1",
+      "buildNumber": "3",
+      "config": {
+        "usesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/logo.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.synapsemobility.synapse-v1",
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-dev-client",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "The app accesses your photos to let you share them with your chat.",
+          "cameraPermission": "The app accesses your camera to let you take photos to share in chat."
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "03de6e39-f3be-4e8c-8c4d-e4f0f02bd48f"
+      }
+    },
+    "scheme": "estategpt"
   }
 }

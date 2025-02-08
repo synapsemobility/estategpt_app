@@ -1,20 +1,23 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { ThemeProvider } from '@aws-amplify/ui-react-native';
+import { theme } from './src/theme';
+import { CustomAuthenticator } from './src/components/auth/CustomAuthenticator';
+import './src/config/amplify';
+import { PurchaseManager, PurchaseManagerContext } from './src/services/PurchaseManager';
 
-export default function App() {
+const App = () => {
+  const purchaseManager = new PurchaseManager();
+  
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <NavigationContainer>
+      <ThemeProvider theme={theme}>
+        <PurchaseManagerContext.Provider value={purchaseManager}>
+          <CustomAuthenticator />
+        </PurchaseManagerContext.Provider>
+      </ThemeProvider>
+    </NavigationContainer>
   );
-}
+};
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+export default App;
