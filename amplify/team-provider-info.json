@@ -1,0 +1,20 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-estategptamplifyv1-dev-7f1c0-authRole",
+      "UnauthRoleArn": "arn:aws:iam::905418255258:role/amplify-estategptamplifyv1-dev-7f1c0-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::905418255258:role/amplify-estategptamplifyv1-dev-7f1c0-authRole",
+      "Region": "us-east-1",
+      "DeploymentBucketName": "amplify-estategptamplifyv1-dev-7f1c0-deployment",
+      "UnauthRoleName": "amplify-estategptamplifyv1-dev-7f1c0-unauthRole",
+      "StackName": "amplify-estategptamplifyv1-dev-7f1c0",
+      "StackId": "arn:aws:cloudformation:us-east-1:905418255258:stack/amplify-estategptamplifyv1-dev-7f1c0/21303fb0-e3e9-11ef-adcb-12c4d3b0cfa5",
+      "AmplifyAppId": "d37xfcpe7qyrrh"
+    },
+    "categories": {
+      "auth": {
+        "estategptamplifyv14c0d4611": {}
+      }
+    }
+  }
+}
