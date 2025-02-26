@@ -10,7 +10,7 @@ export class PurchaseManager {
   // Mark as readonly so MobX does not try to make it observable.
   private readonly subscriptionIds = Platform.select({
     ios: ['00', '01'], // Replace these with your actual product IDs
-    android: [],
+    android: ['00', '01'], // Add Android product IDs
   }) ?? [];
 
   productReferenceNames: { [key: string]: string } = {

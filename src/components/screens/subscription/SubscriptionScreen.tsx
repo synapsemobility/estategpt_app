@@ -35,16 +35,18 @@ const SubscriptionCard = ({ product, onSubscribe }) => (
       {product.id === '01' ? (
         <>
           <Feature icon="infinite" text="Everything in HomeOwner's Plan with 15X limits" />
-          <Feature icon="speedometer" text="Faster responses" />
-          <Feature icon="briefcase" text="Ideal for real estate professionals like agents, brokers, appraisers, inspectors, etc." />
+          <Feature icon="speedometer" text="Smarter AI-powered portfolio management" />
+          <Feature icon="document-text" text="Document management for multiple properties" />
+          <Feature icon="document-text" text="Advanced tax strategies like bonus depreciation, 1031 exchange, etc." />
+          <Feature icon="briefcase" text="Ideal for realtors, HOA managers, home inspectors, and other real estate professionals" />
         </>
       ) : (
         <>
-          <Feature icon="library" text="US and all states real estate related laws knowledge-base" />
-          <Feature icon="scan" text="Analyze any property related image for damages" />
-          <Feature icon="document-text" text="Analyze any property related documents: mortgage, inspection, lease, taxes etc." />
-          <Feature icon="chatbox" text="15 daily / 100 monthly texts" />
-          <Feature icon="images" text="5 daily / 30 monthly images" />
+          <Feature icon="library" text="Real-time chat support for all home maintenance related questions" />
+          <Feature icon="scan" text="Image based damage assessment and cost estimation" />
+          <Feature icon="document-text" text="Private CPA and real estate legal support with AI" />
+          <Feature icon="chatbox" text="Hyperlocal legal and tax advice" />
+          <Feature icon="images" text="Queryale datahouse for property documents and information" />
           <Feature icon="home" text="Perfect for primary property owners" />
         </>
       )}
@@ -105,7 +107,12 @@ export const SubscriptionScreen = observer(() => {
   };
 
   const handleManageSubscriptions = () => {
-    Linking.openURL('https://apps.apple.com/account/subscriptions');
+    if (Platform.OS === 'ios') {
+        Linking.openURL('https://apps.apple.com/account/subscriptions');
+    } else {
+        // For Android
+        Linking.openURL('https://play.google.com/store/account/subscriptions');
+    }
   };
 
   if (isLoading) {

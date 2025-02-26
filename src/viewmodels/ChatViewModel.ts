@@ -1,37 +1,76 @@
-import { makeAutoObservable, runInAction } from 'mobx';
+import { makeAutoObservable, runInAction, action } from 'mobx';
 import { ChatService } from '../services/ChatService';
 import { Message, ChatMode, ChatState } from '../types/chat.types';
 import * as ImagePicker from 'expo-image-picker';
 import { ServerEnvironment } from '../config/server.config';
+import { getCurrentUser } from '@aws-amplify/auth';
+import { Alert } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
 export class ChatViewModel {
   messages: Message[] = [];
   userInput: string = '';
   selectedImage: string | null = null;
-  currentMode: ChatMode = 'homeCare';
+  currentMode: ChatMode = 'homie';
   isLoading: boolean = false;
   imageCaption: string = '';
+  currentStreamingMessage: string = '';
+  userId: string = '';
   
   private chatService: ChatService;
   private messageCounter: number = 0;
-  private userID: string;
 
   constructor(userID: string) {
     makeAutoObservable(this);
-    this.userID = userID;
+    this.userId = userID;
     this.chatService = new ChatService(userID);
+    this.currentMode = 'homie';
+  }
+
+  private async initializeUser() {
+    try {
+      const user = await getCurrentUser();
+      runInAction(() => {
+        this.userId = user.userId;
+        this.chatService = new ChatService(user.userId);
+      });
+    } catch (error) {
+      Alert.alert(
+        'Authentication Error',
+        'Please sign in to continue',
+        [
+          { 
+            text: 'OK', 
+            onPress: () => {
+              // Navigate to auth screen or handle as needed
+              this.handleAuthError();
+            }
+          }
+        ]
+      );
+    }
+  }
+
+  private handleAuthError() {
+    // Add your auth error handling logic here
+    // For example, clear local data and redirect to login
+    this.messages = [];
+    this.userInput = '';
+    this.selectedImage = null;
+    // You might want to trigger a navigation or auth flow here
   }
 
   generateUniqueId(): string {
     return `${Date.now()}-${this.messageCounter++}`;
   }
 
-  clearChat = async () => {
-    this.messages = [];
-    this.userInput = '';
-    this.selectedImage = null;
-    this.isLoading = false;
-    await this.chatService.clearChat();
+  clearChat = () => {
+    runInAction(() => {
+      this.messages = [];
+      this.isLoading = false;
+      this.userInput = '';
+      this.selectedImage = null;
+    });
   };
 
   sendCombinedMessage = async () => {
@@ -160,47 +199,38 @@ export class ChatViewModel {
     }
   };
 
-  private fetchTextResponse = async (input: string) => {
+  @action
+  private async fetchTextResponse(input: string) {
     this.isLoading = true;
     
     try {
-      await this.chatService.fetchTextResponse(
-        input,
-        this.currentMode,
-        (response) => {
-          runInAction(() => {
-            const lastMessage = this.messages[this.messages.length - 1];
-            if (lastMessage && !lastMessage.isUserMessage) {
-              lastMessage.content = response;
+        await this.chatService.fetchTextResponse(
+            input,
+            this.currentMode,
+            action("updateMessages", (response, youtubeUrls) => {
+                // Create a single message with both response and YouTube URLs
+                const message = {
+                    id: Date.now().toString(),
+                    content: response,
+                    isUserMessage: false,
+                    youtubeUrls: youtubeUrls
+                };
+                
+                // Push only one message containing both text and videos
+                this.messages.push(message);
+            }),
+            (error) => {
+                console.error('Error:', error);
             }
-            this.isLoading = false;
-          });
-        },
-        (error) => {
-          runInAction(() => {
-            this.isLoading = false;
-            this.messages.push({
-              id: this.generateUniqueId(),
-              content: `Error: ${error.message}`,
-              isUserMessage: false,
-            });
-          });
-        }
-      );
+        );
     } catch (error) {
-      console.error('Error in fetchTextResponse:', error);
-      runInAction(() => {
-        this.isLoading = false;
-        if (this.messages[this.messages.length - 1]?.isUserMessage) {
-          this.messages.push({
-            id: this.generateUniqueId(),
-            content: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
-            isUserMessage: false,
-          });
-        }
-      });
+        console.error('Error in fetchTextResponse:', error);
+    } finally {
+        runInAction(() => {
+            this.isLoading = false;
+        });
     }
-  };
+  }
 
   setCurrentMode = (mode: ChatMode) => {
     this.currentMode = mode;

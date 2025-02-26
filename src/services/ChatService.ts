@@ -29,11 +29,10 @@ export class ChatService {
   async fetchTextResponse(
     input: string, 
     mode: ChatMode,
-    onSuccess: (response: string) => void,
+    onSuccess: (response: string, youtubeUrls?: string[]) => void,
     onError: (error: Error) => void
   ) {
     try {
-      // console.log('Sending request to:', ServerEnvironment.chatEndpoint);
       const response = await fetch(ServerEnvironment.chatEndpoint, {
         method: 'POST',
         headers: {
@@ -51,12 +50,9 @@ export class ChatService {
       }
 
       const data = await response.json();
-      // console.log('Received response:', data); // Log the actual response
-
-      if (data.type === 'text' && data.llm_response) {
-        onSuccess(data.llm_response);
+      if (data.type === 'text') {
+        onSuccess(data.llm_response, data.youtube_url_list);
       } else {
-        console.error('Invalid response format:', data);
         throw new Error('Invalid response format');
       }
     } catch (error) {
@@ -115,4 +111,4 @@ export class ChatService {
       onError(error as Error);
     }
   }
-} 
+}    

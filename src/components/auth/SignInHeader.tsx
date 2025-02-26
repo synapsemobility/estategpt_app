@@ -5,10 +5,10 @@ import { LinearGradient } from 'expo-linear-gradient';
 export const SignInHeader = () => (
   <View style={styles.container}>
     <LinearGradient
-      colors={['#FFFFFF', '#FFFFFF']}
+      colors={['#FFFFFF', '#F8F8F8']}
       style={styles.gradient}
       start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
+      end={{ x: 0, y: 1 }}
     >
       <View style={styles.headerContainer}>
         <Image
@@ -36,26 +36,26 @@ const styles = StyleSheet.create({
   },
   headerContainer: {
     alignItems: 'center',
-    paddingTop: 10,
-    paddingBottom: 24,
+    paddingTop: 60,
+    paddingBottom: 40,
   },
   logo: {
-    width: 60,
-    height: 60,
-    marginBottom: 16,
+    width: 80,
+    height: 80,
+    marginBottom: 20,
   },
   textContainer: {
     alignItems: 'center',
   },
   title: {
-    fontSize: 36,
-    fontWeight: '500',
-    color: '#1A1A1A',
-    letterSpacing: 1.5,
+    fontSize: 32,
+    fontWeight: '600',
+    color: '#333333',
+    letterSpacing: 0.5,
     marginBottom: 8,
   },
   subtitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '500',
     color: '#666666',
   },

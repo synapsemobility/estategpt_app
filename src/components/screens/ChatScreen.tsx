@@ -14,6 +14,7 @@ import {
   KeyboardAvoidingView,
   Keyboard,
   TouchableWithoutFeedback,
+  Linking,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SignOutButton } from '../auth/SignOutButton';
@@ -28,6 +29,8 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Message } from '../../types/chat.types';
 import { useAuthenticator } from '@aws-amplify/ui-react-native';
 import Markdown from 'react-native-markdown-display';
+import { YouTubePlayer } from './YouTubePlayer';
+import { reaction } from 'mobx';
 
 export type RootStackParamList = {
   Chat: {
@@ -38,34 +41,47 @@ export type RootStackParamList = {
 
 export type ChatScreenProps = NativeStackScreenProps<RootStackParamList, 'Chat'>;
 
-type ChatMode = 'homeCare' | 'legalCare';
+type ChatMode = 'homie' | 'hackIt' | 'legit';
 
 export const ChatScreen: React.FC<ChatScreenProps> = observer(({ route }) => {
   const { userID } = route.params;
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const viewModel = React.useRef(new ChatViewModel(userID ?? 'guest')).current;
-  const [showPrompts, setShowPrompts] = useState(true);
+  
+  // Initialize showPrompts based on message count
+  const [showPrompts, setShowPrompts] = useState(viewModel.messages.length === 0);
+  
   const scrollViewRef = useRef<ScrollView>(null);
   const { signOut } = useAuthenticator();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  
+  // Track the current mode to detect changes
+  const previousModeRef = useRef(viewModel.currentMode);
 
   // State for scroll management
   const [shouldScrollToBottom, setShouldScrollToBottom] = useState(false);
 
-  const homeCarePrompts = [
-    "How to fix leaky faucet - DIY",
-    "Find me nearby handyman available this weekend",
-    "Need kitchen remodel quotes for single family",
-    "Lifetime cost of different HVAC systems"
+  const homiePrompts = [
+    "Find nearby handyman\navailable this weekend",
+    "Kitchen remodel quotes\nfor single family home",
+    "Compare lifetime costs\nof HVAC systems"
   ];
 
-  const legalCarePrompts = [
-    "Handling property tax assessments?",
-    "Tax credits for energy-efficient homes?",
-    "Claiming home office on taxes?",
-    "Explain title insurance requirements"
+  const hackItPrompts = [
+    "How to fix leaky faucet\nDIY guide",
+    "Weekend DIY projects\nfor home improvement",
+    "Fix squeaky floors\nstep-by-step"
   ];
 
-  const currentPrompts = viewModel.currentMode === 'homeCare' ? homeCarePrompts : legalCarePrompts;
+  const legitPrompts = [
+    "Property tax assessments\nappeal process",
+    "Energy-efficient home\ntax credits",
+    "Home office deduction\nrequirements",
+    "Title insurance\nexplained"
+  ];
+
+  const currentPrompts = viewModel.currentMode === 'homie' ? homiePrompts : 
+  viewModel.currentMode === 'hackIt' ? hackItPrompts : legitPrompts;
 
   const sendMessage = () => {
     if (viewModel.userInput.trim()) {
@@ -121,66 +137,66 @@ export const ChatScreen: React.FC<ChatScreenProps> = observer(({ route }) => {
   };
 
   const renderMessage = (message: Message) => {
-    if (!message.id || (!message.content && !message.image)) {
-      return null;
-    }
+    if (!message.id) return null;
 
-    if (message.image && !message.content) {
-      return (
-        <View
-          key={message.id}
-          style={[
-            styles.imageOnlyContainer,
-            message.isUserMessage ? styles.userImageAlign : styles.botImageAlign
-          ]}
-        >
-          <Image
-            source={{ uri: message.image }}
-            style={styles.messageImage}
-            resizeMode="contain"
-          />
-        </View>
-      );
-    }
-
-    return (
-      <View
-        key={message.id}
-        style={[
-          styles.messageContainer,
-          message.isUserMessage ? styles.userMessage : styles.botMessage,
-          message.isStreaming && styles.streamingMessage,
-        ]}
-      >
-        {message.image && message.content && (
-          <Image
-            source={{ uri: message.image }}
-            style={styles.messageImage}
-            resizeMode="contain"
-          />
-        )}
-        {message.content && (
-          message.isUserMessage ? (
-            <Text style={[styles.messageText, styles.userMessageText]}>
-              {message.content}
-            </Text>
-          ) : (
-            <Markdown 
-              style={{
-                body: [styles.messageText, styles.botMessageText],
-                strong: { fontWeight: 'bold' },
-                em: { fontStyle: 'italic' },
-                link: { color: '#0066CC' },
-                list: { marginBottom: 8 },
-                listItem: { marginBottom: 4 },
-              }}
+    if (message.isUserMessage) {
+        return (
+            <View
+                key={message.id}
+                style={[
+                    styles.messageContainer,
+                    styles.userMessage,
+                ]}
             >
-              {message.content}
-            </Markdown>
-          )
-        )}
-      </View>
-    );
+                {message.image ? (
+                    <View style={styles.userImageContainer}>
+                        <Image 
+                            source={{ uri: message.image }} 
+                            style={styles.messageImage}
+                            resizeMode="cover"
+                        />
+                        {message.content && (
+                            <Text style={[styles.messageText, styles.userMessageText]}>
+                                {message.content}
+                            </Text>
+                        )}
+                    </View>
+                ) : (
+                    <Text style={[styles.messageText, styles.userMessageText]}>
+                        {message.content}
+                    </Text>
+                )}
+            </View>
+        );
+    } else {
+        return (
+            <View key={message.id} style={styles.botContent}>
+                {message.content && (
+                    <Markdown 
+                        style={{
+                            body: styles.botMessageText,
+                            link: { color: '#0066CC', textDecorationLine: 'underline' },
+                        }}
+                    >
+                        {message.content}
+                    </Markdown>
+                )}
+                
+                {message.youtubeUrls && message.youtubeUrls.length > 0 && (
+                    <View style={styles.youtubeContainer}>
+                        <Text style={styles.youtubeHeader}>Related YouTube Videos:</Text>
+                        {message.youtubeUrls.map((videoData, index) => (
+                            <YouTubePlayer 
+                                key={index}
+                                videoData={videoData}
+                                title={`Video ${index + 1}`}
+                            />
+                        ))}
+                    </View>
+                )}
+            </View>
+        );
+    }
   };
 
   // Simplified scroll effect
@@ -189,6 +205,55 @@ export const ChatScreen: React.FC<ChatScreenProps> = observer(({ route }) => {
       scrollViewRef.current?.scrollToEnd({ animated: true });
     }
   }, [viewModel.messages.length]);
+
+  // Add this effect to automatically toggle prompts based on message count
+  useEffect(() => {
+    // If messages change from 0 to some, hide prompts
+    if (viewModel.messages.length > 0 && showPrompts) {
+      setShowPrompts(false);
+    }
+    
+    // If all messages are cleared, show prompts
+    if (viewModel.messages.length === 0 && !showPrompts) {
+      setShowPrompts(true);
+    }
+  }, [viewModel.messages.length]);
+
+  // Add this to handle clearing chat
+  useEffect(() => {
+    // Listen for chat clear events
+    const disposer = reaction(
+      () => viewModel.messages.length,
+      (length, previousLength) => {
+        // If messages were cleared (went from some to zero)
+        if (previousLength > 0 && length === 0) {
+          setShowPrompts(true);
+        }
+      }
+    );
+    
+    return () => disposer();
+  }, []);
+
+  // Add this effect to clear chat when mode changes
+  useEffect(() => {
+    // Check if mode has changed
+    if (previousModeRef.current !== viewModel.currentMode) {
+      // Clear the chat
+      viewModel.clearChat();
+      
+      // Show prompts when mode changes
+      setShowPrompts(true);
+      
+      // Update the previous mode reference
+      previousModeRef.current = viewModel.currentMode;
+    }
+  }, [viewModel.currentMode]);
+
+  const handleModeChange = (mode: 'homie' | 'hackIt' | 'legit') => {
+    viewModel.setCurrentMode(mode);
+    setIsDropdownOpen(false);
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -213,8 +278,24 @@ export const ChatScreen: React.FC<ChatScreenProps> = observer(({ route }) => {
               <Icon name="menu" size={24} color="#333" />
             </TouchableOpacity>
             
-            <Text style={styles.title}>EstateGPT</Text>
-            
+            <View style={styles.titleContainer}>
+              <Text style={styles.title}>EstateGPT</Text>
+              <TouchableOpacity 
+                style={styles.modeDropdown}
+                onPress={() => setIsDropdownOpen(!isDropdownOpen)}
+              >
+                <Text style={styles.currentMode}>
+                  {viewModel.currentMode === 'homie' ? 'Homie' : 
+                   viewModel.currentMode === 'hackIt' ? 'HackIt' : 'Legit'}
+                </Text>
+                <Icon 
+                  name={isDropdownOpen ? "chevron-up" : "chevron-down"} 
+                  size={12} 
+                  color="#666" 
+                />
+              </TouchableOpacity>
+            </View>
+
             <TouchableOpacity 
               style={styles.newChatButton}
               onPress={() => viewModel.clearChat()}
@@ -223,33 +304,45 @@ export const ChatScreen: React.FC<ChatScreenProps> = observer(({ route }) => {
             </TouchableOpacity>
           </View>
 
-          {/* Mode Toggle */}
-          <View style={styles.modeToggle}>
-            <TouchableOpacity 
-              style={[
-                styles.modeButton, 
-                viewModel.currentMode === 'homeCare' && styles.modeButtonActive
-              ]}
-              onPress={() => viewModel.setCurrentMode('homeCare')}
-            >
-              <Text style={[
-                styles.modeButtonText,
-                viewModel.currentMode === 'homeCare' && styles.modeButtonTextActive
-              ]}>Home Care</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={[
-                styles.modeButton, 
-                viewModel.currentMode === 'legalCare' && styles.modeButtonActive
-              ]}
-              onPress={() => viewModel.setCurrentMode('legalCare')}
-            >
-              <Text style={[
-                styles.modeButtonText,
-                viewModel.currentMode === 'legalCare' && styles.modeButtonTextActive
-              ]}>Legal Care</Text>
-            </TouchableOpacity>
-          </View>
+          {/* Dropdown Menu - Outside the header */}
+          {isDropdownOpen && (
+            <>
+              <TouchableOpacity 
+                style={styles.dropdownOverlay}
+                onPress={() => setIsDropdownOpen(false)}
+                activeOpacity={1}
+              />
+              <View style={styles.dropdownMenu}>
+                <TouchableOpacity 
+                  style={styles.dropdownItem}
+                  onPress={() => handleModeChange('homie')}
+                >
+                  <Text style={[
+                    styles.dropdownText,
+                    viewModel.currentMode === 'homie' && styles.dropdownTextActive
+                  ]}>Homie</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.dropdownItem}
+                  onPress={() => handleModeChange('hackIt')}
+                >
+                  <Text style={[
+                    styles.dropdownText,
+                    viewModel.currentMode === 'hackIt' && styles.dropdownTextActive
+                  ]}>HackIt</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.dropdownItem}
+                  onPress={() => handleModeChange('legit')}
+                >
+                  <Text style={[
+                    styles.dropdownText,
+                    viewModel.currentMode === 'legit' && styles.dropdownTextActive
+                  ]}>Legit</Text>
+                </TouchableOpacity>
+              </View>
+            </>
+          )}
 
           {/* Wrap ScrollView in TouchableWithoutFeedback for keyboard dismiss */}
           <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -299,15 +392,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = observer(({ route }) => {
                 showsHorizontalScrollIndicator={false}
                 style={styles.promptsContainer}
               >
-                {viewModel.currentMode === 'homeCare' ? homeCarePrompts.map((prompt, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    style={styles.promptButton}
-                    onPress={() => viewModel.setUserInput(prompt)}
-                  >
-                    <Text style={styles.promptText}>{prompt}</Text>
-                  </TouchableOpacity>
-                )) : legalCarePrompts.map((prompt, index) => (
+                {currentPrompts.map((prompt, index) => (
                   <TouchableOpacity
                     key={index}
                     style={styles.promptButton}
@@ -333,16 +418,18 @@ export const ChatScreen: React.FC<ChatScreenProps> = observer(({ route }) => {
                 value={viewModel.userInput}
                 onChangeText={viewModel.setUserInput}
                 placeholder={
-                  viewModel.currentMode === 'homeCare'
-                    ? "Describe home issues or upload photos for estimates"
-                    : "Ask about contracts, laws, or legal documents"
+                  viewModel.currentMode === 'homie'
+                    ? "Ask anything about your home maintenance ..."
+                    : viewModel.currentMode === 'hackIt'
+                      ? "Ask about your diy tasks, and get vids, tools required, and step by step instructions"
+                      : "Ask about your any property related legal questions ..."
                 }
                 multiline
               />
 
               <View style={styles.buttonGroup}>
                 <TouchableOpacity
-                  style={styles.attachButton}
+                  style={styles.attachButton} 
                   onPress={() => {
                     Alert.alert(
                       'Upload Photo',

@@ -6,22 +6,23 @@ import Icon from '@expo/vector-icons/Ionicons';
 const darkGray = 'rgba(26, 26, 26, 1)';
 const lightGray = 'rgba(242, 242, 242, 1)';
 
-const homeCareExamples = [
-  "Fix leaky faucet - DIY solutions",
-  "Kitchen remodel cost estimates",
-  "HVAC system lifetime costs",
-  "Budget-friendly value improvements"
+const homieExamples = [
+  "Find nearby handyman\navailable this weekend",
+  "Kitchen remodel quotes\nfor single family home",
+  "Compare lifetime costs\nof HVAC systems"
 ];
 
-const legalCareExamples = [
-  "Handling property tax assessments?",
-  "Tax credits for energy-efficient homes?",
-  "Claiming home office on taxes?",
-  "Explain title insurance requirements",
-  "Mortgage interest tax deductions explained?",
-  "Deductible expenses for rental properties?",
-  "Tax implications of selling a home?",
-  "Capital gains tax on property sales?"
+const hackItExamples = [
+  "How to fix leaky faucet\nDIY guide",
+  "Weekend DIY projects\nfor home improvement",
+  "Fix squeaky floors\nstep-by-step"
+];
+
+const legitExamples = [
+  "Property tax assessments\nappeal process",
+  "Energy-efficient home\ntax credits",
+  "Home office deduction\nrequirements",
+  "Title insurance\nexplained"
 ];
 
 interface FeatureCardProps {
@@ -57,7 +58,7 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description, exa
 
 const BulletPoint = ({ text }: { text: string }) => (
   <View style={styles.bulletPoint}>
-    <Icon name="checkmark-circle" size={20} color={darkGray} />
+    <Icon name="checkmark-circle" size={20} color="#555555" />
     <Text style={styles.bulletText}>{text}</Text>
   </View>
 );
@@ -71,7 +72,7 @@ const ContactItem = ({ icon, label, isEmail = false }: {
     style={styles.contactItem}
     onPress={() => isEmail && Linking.openURL(`mailto:${label}`)}
   >
-    <Icon name={icon} size={20} color={darkGray} />
+    <Icon name={icon} size={20} color="#555555" />
     <Text style={styles.contactLabel}>{label}</Text>
   </TouchableOpacity>
 );
@@ -89,18 +90,26 @@ export const AboutUsScreen = () => {
           <View style={styles.featuresSection}>
             <FeatureCard
               icon="home"
-              title="HomeCare Mode"
+              title="Homie Mode"
               description="Your AI-powered home maintenance expert"
-              examples={homeCareExamples}
-              color={darkGray}
+              examples={homieExamples}
+              color="#555555"
             />
             
             <FeatureCard
-              icon="book"
-              title="LegalCare Mode"
-              description="Property law & document analysis"
-              examples={legalCareExamples}
-              color={darkGray}
+              icon="hammer"
+              title="HackIt Mode"
+              description="DIY solutions with video tutorials"
+              examples={hackItExamples}
+              color="#555555"
+            />
+            
+            <FeatureCard
+              icon="document-text"
+              title="Legit Mode"
+              description="Property law & tax guidance"
+              examples={legitExamples}
+              color="#555555"
             />
           </View>
 
@@ -111,9 +120,9 @@ export const AboutUsScreen = () => {
               Combining AI precision with industry expertise to deliver:
             </Text>
             <BulletPoint text="Instant contractor connections" />
+            <BulletPoint text="Step-by-step DIY guides with videos" />
             <BulletPoint text="Legal document analysis in minutes" />
             <BulletPoint text="Personalized cost estimations" />
-            <BulletPoint text="Regulatory compliance checks" />
           </View>
 
           {/* Contact Section */}
@@ -145,38 +154,41 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    padding: 30,
+    padding: 24,
   },
   subtitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '500',
-    color: `${darkGray}cc`,
-    fontStyle: 'italic',
-    marginBottom: 30,
+    color: '#555555',
+    marginBottom: 24,
+    textAlign: 'center',
   },
   featuresSection: {
-    gap: 30,
+    gap: 20,
     marginBottom: 30,
   },
   featureCard: {
     padding: 16,
     backgroundColor: 'white',
-    borderRadius: 15,
-    shadowColor: darkGray,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.5,
-    shadowRadius: 8,
-    elevation: 5,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: '#F0F0F0',
   },
   featureHeader: {
     flexDirection: 'row',
     gap: 15,
     marginBottom: 15,
+    alignItems: 'center',
   },
   iconContainer: {
-    width: 50,
-    height: 50,
-    borderRadius: 12,
+    width: 44,
+    height: 44,
+    borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -184,75 +196,94 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   featureTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '600',
-    color: darkGray,
+    color: '#333333',
+    marginBottom: 2,
   },
   featureDescription: {
     fontSize: 14,
-    color: `${darkGray}b3`,
+    color: '#666666',
   },
   examplesContainer: {
-    gap: 10,
+    gap: 8,
   },
   examplesTitle: {
     fontSize: 12,
-    color: `${darkGray}99`,
+    color: '#888888',
+    marginBottom: 4,
   },
   exampleItem: {
     padding: 10,
-    backgroundColor: lightGray,
+    backgroundColor: '#F5F5F5',
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: `${darkGray}1a`,
+    borderColor: '#EBEBEB',
+    marginBottom: 6,
   },
   exampleText: {
     fontSize: 14,
-    color: darkGray,
+    color: '#555555',
+    lineHeight: 20,
   },
   valueSection: {
-    gap: 15,
+    gap: 12,
     marginBottom: 30,
+    backgroundColor: '#F9F9F9',
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#EBEBEB',
   },
   sectionTitle: {
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: '600',
-    color: darkGray,
+    color: '#333333',
+    marginBottom: 4,
   },
   sectionSubtitle: {
-    fontSize: 16,
-    color: `${darkGray}cc`,
+    fontSize: 14,
+    color: '#666666',
+    marginBottom: 8,
   },
   bulletPoint: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
+    marginVertical: 4,
   },
   bulletText: {
-    fontSize: 16,
-    color: `${darkGray}cc`,
+    fontSize: 14,
+    color: '#555555',
   },
   contactSection: {
-    gap: 15,
+    gap: 12,
   },
   divider: {
     height: 1,
-    backgroundColor: `${darkGray}33`,
-    marginVertical: 15,
+    backgroundColor: '#EBEBEB',
+    marginVertical: 12,
   },
   contactTitle: {
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '600',
-    color: darkGray,
+    color: '#333333',
+    marginBottom: 8,
   },
   contactItem: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
     paddingVertical: 8,
+    backgroundColor: '#F5F5F5',
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#EBEBEB',
   },
   contactLabel: {
-    fontSize: 16,
-    color: `${darkGray}cc`,
+    fontSize: 14,
+    color: '#555555',
   },
 });

@@ -3,11 +3,19 @@
     "version": ">= 5.9.1"
   },
   "build": {
-    "preview": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "android": {
+        "gradleCommand": ":app:assembleDebug"
+      },
       "ios": {
-        "distribution": "internal",
-        "developmentClient": true
+        "buildConfiguration": "Debug"
       }
-    }
+    },
+    "preview": {
+      "distribution": "internal"
+    },
+    "production": {}
   }
 }

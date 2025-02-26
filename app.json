@@ -2,7 +2,7 @@
   "expo": {
     "name": "EstateGPT",
     "slug": "estategpt",
-    "version": "1.84",
+    "version": "1.86",
     "orientation": "portrait",
     "icon": "./assets/logo.png",
     "userInterfaceStyle": "light",
@@ -15,6 +15,11 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.synapsemobility.synapse-v1",
+      "entitlements": {
+        "com.apple.developer.applesignin": [
+          "Default"
+        ]
+      },
       "buildNumber": "3",
       "config": {
         "usesNonExemptEncryption": false
@@ -25,10 +30,12 @@
         "foregroundImage": "./assets/logo.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.synapsemobility.synapse-v1",
+      "package": "com.singaporv.estategpt",
       "permissions": [
         "android.permission.RECORD_AUDIO"
-      ]
+      ],
+      "enableProguardInReleaseBuilds": false,
+      "enableHermes": true
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -48,6 +55,6 @@
         "projectId": "03de6e39-f3be-4e8c-8c4d-e4f0f02bd48f"
       }
     },
-    "scheme": "estategpt"
+    "scheme": "com.synapsemobility.synapse-v1"
   }
 }
