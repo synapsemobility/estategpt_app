@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "840434256626",
+    "project_id": "estategpt-ea400",
+    "storage_bucket": "estategpt-ea400.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:840434256626:android:332f9634be4544cd735e6b",
+        "android_client_info": {
+          "package_name": "com.singaporv.estategpt"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBvK-KMccQZp6SSnECqApH808j8nC6xYm4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

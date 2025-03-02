@@ -286,4 +286,46 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingTop: 12,
   },
+  proHintToast: {
+    backgroundColor: '#F8F8F8',
+    borderRadius: 8,
+    marginHorizontal: 16,
+    marginBottom: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+    zIndex: 5, // Ensure it's above the chat content but below the dropdown
+  },
+  proHintContainer: {
+    paddingHorizontal: 16,
+    paddingBottom: 8,
+    backgroundColor: '#FFFFFF',
+  },
+  proHintContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+  },
+  proHintText: {
+    flex: 1,
+    marginLeft: 10,
+    fontSize: 14,
+    color: '#555',
+  },
+  proHintClose: {
+    padding: 4,
+  },
+  proHintDot: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: '#555', // Changed from blue to dark grey
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 }); 

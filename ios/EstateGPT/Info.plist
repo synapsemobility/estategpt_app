@@ -53,9 +53,13 @@
 	<key>NSCameraUsageDescription</key>
 	<string>The app accesses your camera to let you take photos to share in chat.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Allow $(PRODUCT_NAME) to access your microphone</string>
+	<string>EstateGPT needs access to your microphone for video calls</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>The app accesses your photos to let you share them with your chat.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>SplashScreen</string>
 	<key>UIRequiredDeviceCapabilities</key>

@@ -1,14 +1,25 @@
-## Android
+## iOS
 
-### With Xcode
+### Development with Expo
 npx expo start --clear
 
-
+### With cache reset
 npx expo start --clear --reset-cache
 
-### Without Xcode
-
+### Build and run on device/simulator (requires Xcode)
 npx expo run:ios
+npx expo run:ios --device "Daddy"
+npx expo run:ios --device "Alka's iPhone"
+npx expo run:ios --device "Alka Arcbest"
+
+#### Clean build
+```
+cd ios
+pod deintegrate
+pod install
+cd ..
+npx expo run:ios
+```
 
 ## Android
 ### For development
@@ -26,6 +37,14 @@ cd android
 ./gradlew clean
 cd ..
 npx expo run:android --variant playDebug
+```
+
+#### For clean build
+```
+cd android
+./gradlew clean
+cd ..
+npx expo run:android
 ```
 
 ### For release

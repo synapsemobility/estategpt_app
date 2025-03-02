@@ -11,6 +11,16 @@ import { UserScreen } from '../screens/account/UserScreen';
 import { DeleteAccountScreen } from '../screens/account/DeleteAccountScreen';
 import { SignInHeader } from './SignInHeader';
 import { LinearGradient } from 'expo-linear-gradient';
+import { CallProScreen } from '../screens/callpro/CallProScreen';
+import { ProResponseScreen } from '../screens/callpro/ProResponseScreen';
+import { ScheduledCallsScreen } from '../screens/callpro/ScheduledCallsScreen';
+import { ProRequestsScreen } from '../screens/callpro/ProRequestsScreen';
+import { VideoCallScreen } from '../screens/callpro/VideoCallScreen';
+import { TestVideoCallScreen } from '../screens/callpro/TestVideoCallScreen';
+import { PendingCallsScreen } from '../screens/callpro/PendingCallsScreen';
+import { ProProfileScreen } from '../screens/professional/ProProfileScreen';
+import { BecomeProScreen } from '../screens/professional/BecomeProScreen';
+import { UserAgreementModal, hasAcceptedUserAgreement } from './UserAgreementModal';
 
 type RootStackParamList = {
   Chat: { userID: string | undefined };
@@ -19,6 +29,31 @@ type RootStackParamList = {
   Subscription: undefined;
   User: { userID: string };
   DeleteAccount: undefined;
+  CallPro: undefined;
+  ProResponse: {
+    response: string;
+    serviceType: string;
+    location: string;
+    requestDetails: {
+      service_type: string;
+      city: string;
+      state: string;
+      description: string;
+    };
+    availability: Array<any>;
+    image: string | null;
+  };
+  ScheduledCalls: undefined;
+  ProRequests: undefined;
+  TestVideoCall: undefined;
+  VideoCall: {
+    meetingId: string;
+    roomName: string;
+    professionalName: string;
+  };
+  PendingCalls: undefined;
+  ProProfile: undefined;
+  BecomePro: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -40,7 +75,52 @@ const HeaderRight = () => {
 
 const AppContent = () => {
   const { user } = useAuthenticator();
+  const [showAgreement, setShowAgreement] = useState(false);
+  const [agreementAccepted, setAgreementAccepted] = useState(false);
   
+  useEffect(() => {
+    // Check if user has already accepted the agreement
+    const checkAgreementStatus = async () => {
+      const hasAccepted = await hasAcceptedUserAgreement();
+      if (hasAccepted) {
+        setAgreementAccepted(true);
+      } else {
+        setShowAgreement(true);
+      }
+    };
+    
+    checkAgreementStatus();
+  }, []);
+  
+  const handleAcceptAgreement = () => {
+    setShowAgreement(false);
+    setAgreementAccepted(true);
+  };
+  
+  // If agreement hasn't been accepted yet, don't render the main app
+  if (!agreementAccepted) {
+    return (
+      <View style={styles.loadingContainer}>
+        <UserAgreementModal 
+          isVisible={showAgreement}
+          onAccept={handleAcceptAgreement}
+        />
+        {/* Show loading indicator if we're still checking agreement status */}
+        {!showAgreement && (
+          <>
+            <Image
+              source={require('../../../assets/logo.png')}
+              style={styles.loadingLogo}
+              resizeMode="contain"
+            />
+            <ActivityIndicator size="large" color="#555555" style={styles.loadingIndicator} />
+            <Text style={styles.loadingText}>Preparing your experience...</Text>
+          </>
+        )}
+      </View>
+    );
+  }
+
   return (
     <Stack.Navigator
       screenOptions={{
@@ -65,6 +145,39 @@ const AppContent = () => {
         initialParams={{ userID: user?.username }}
       />
       <Stack.Screen name="DeleteAccount" component={DeleteAccountScreen} />
+      <Stack.Screen name="CallPro" component={CallProScreen} />
+      <Stack.Screen name="ProResponse" component={ProResponseScreen} />
+      <Stack.Screen name="ScheduledCalls" component={ScheduledCallsScreen} />
+      <Stack.Screen name="PendingCalls" component={PendingCallsScreen} />
+      
+      {/* Include ProRequestsScreen */}
+      <Stack.Screen 
+        name="ProRequests" 
+        component={ProRequestsScreen}
+        options={{ 
+          headerShown: false,
+          animation: 'slide_from_right'
+        }}
+      />
+      
+      <Stack.Screen 
+        name="TestVideoCall" 
+        component={TestVideoCallScreen}
+        options={{ 
+          headerShown: true,
+          title: "Test Video Call" 
+        }} 
+      />
+      <Stack.Screen 
+        name="VideoCall" 
+        component={VideoCallScreen}
+        options={{ 
+          headerShown: false,
+          gestureEnabled: false  // Prevent accidentally swiping back during a call
+        }} 
+      />
+      <Stack.Screen name="ProProfile" component={ProProfileScreen} />
+      <Stack.Screen name="BecomePro" component={BecomeProScreen} />
     </Stack.Navigator>
   );
 };

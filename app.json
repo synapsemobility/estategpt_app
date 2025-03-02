@@ -35,7 +35,8 @@
         "android.permission.RECORD_AUDIO"
       ],
       "enableProguardInReleaseBuilds": false,
-      "enableHermes": true
+      "enableHermes": true,
+      "minSdkVersion": 24
     },
     "web": {
       "favicon": "./assets/favicon.png"

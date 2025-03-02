@@ -15,6 +15,7 @@ import {
   Keyboard,
   TouchableWithoutFeedback,
   Linking,
+  Animated,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SignOutButton } from '../auth/SignOutButton';
@@ -31,6 +32,9 @@ import { useAuthenticator } from '@aws-amplify/ui-react-native';
 import Markdown from 'react-native-markdown-display';
 import { YouTubePlayer } from './YouTubePlayer';
 import { reaction } from 'mobx';
+import { useNavigation } from '@react-navigation/native';
+import type { NavigationProp } from '@react-navigation/native';
+import type { RootStackParamList } from '../auth/CustomAuthenticator';
 
 export type RootStackParamList = {
   Chat: {
@@ -61,6 +65,11 @@ export const ChatScreen: React.FC<ChatScreenProps> = observer(({ route }) => {
   // State for scroll management
   const [shouldScrollToBottom, setShouldScrollToBottom] = useState(false);
 
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+
+  const [showProHint, setShowProHint] = useState(true);
+  const [currentHintIndex, setCurrentHintIndex] = useState(0);
+
   const homiePrompts = [
     "Find nearby handyman\navailable this weekend",
     "Kitchen remodel quotes\nfor single family home",
@@ -82,6 +91,31 @@ export const ChatScreen: React.FC<ChatScreenProps> = observer(({ route }) => {
 
   const currentPrompts = viewModel.currentMode === 'homie' ? homiePrompts : 
   viewModel.currentMode === 'hackIt' ? hackItPrompts : legitPrompts;
+
+  const proHints = [
+    {
+      icon: 'call',
+      text: 'Need urgent help? Call a pro',
+      action: () => navigation.navigate('CallPro')
+    },
+    {
+      icon: 'home',
+      text: 'Talk to a real person (property experts)',
+      action: () => navigation.navigate('CallPro')
+    },
+  ];
+
+  // Rotate hints every 10 seconds
+  useEffect(() => {
+    if (showProHint) {
+      const interval = setInterval(() => {
+        setCurrentHintIndex((prev) => (prev + 1) % proHints.length);
+      }, 2000);
+      return () => clearInterval(interval);
+    }
+  }, [showProHint]);
+
+  const currentHint = proHints[currentHintIndex];
 
   const sendMessage = () => {
     if (viewModel.userInput.trim()) {
@@ -276,6 +310,11 @@ export const ChatScreen: React.FC<ChatScreenProps> = observer(({ route }) => {
               onPress={() => setIsMenuOpen(!isMenuOpen)}
             >
               <Icon name="menu" size={24} color="#333" />
+              {showProHint && (
+                <View style={styles.proHintDot}>
+                  <Icon name="star" size={8} color="#FFF" />
+                </View>
+              )}
             </TouchableOpacity>
             
             <View style={styles.titleContainer}>
@@ -303,6 +342,25 @@ export const ChatScreen: React.FC<ChatScreenProps> = observer(({ route }) => {
               <Icon name="create-outline" size={24} color="#333" />
             </TouchableOpacity>
           </View>
+
+          {/* Pro Hint Toast - moved directly under the header */}
+          {showProHint && (
+            <Animated.View style={styles.proHintToast}>
+              <TouchableOpacity 
+                style={styles.proHintContent}
+                onPress={currentHint.action}
+              >
+                <Icon name={currentHint.icon} size={20} color="#555" />
+                <Text style={styles.proHintText}>{currentHint.text}</Text>
+                <TouchableOpacity 
+                  onPress={() => setShowProHint(false)}
+                  style={styles.proHintClose}
+                >
+                  <Icon name="close" size={16} color="#999" />
+                </TouchableOpacity>
+              </TouchableOpacity>
+            </Animated.View>
+          )}
 
           {/* Dropdown Menu - Outside the header */}
           {isDropdownOpen && (
@@ -344,7 +402,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = observer(({ route }) => {
             </>
           )}
 
-          {/* Wrap ScrollView in TouchableWithoutFeedback for keyboard dismiss */}
+          {/* Chat content */}
           <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
             <ScrollView 
               ref={scrollViewRef}
@@ -459,3 +517,4 @@ export const ChatScreen: React.FC<ChatScreenProps> = observer(({ route }) => {
     </SafeAreaView>
   );
 });
+
