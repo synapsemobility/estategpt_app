@@ -10,7 +10,8 @@ import {
   RefreshControl,
   Alert,
   Image,
-  ScrollView
+  ScrollView,
+  Modal
 } from 'react-native';
 import { ScreenHeader } from '../../common/ScreenHeader';
 import Icon from '@expo/vector-icons/Ionicons';
@@ -63,6 +64,13 @@ interface HandleRequestResponse {
 // Tab type definition
 type TabType = 'waiting' | 'approved' | 'rejected' | 'completed' | 'cancelled' | 'other';
 
+// Add this interface for time slot selection
+interface SelectedTimeSlot {
+  date: string;
+  startTime: string;
+  endTime: string;
+}
+
 export const ProMeetingsScreen = () => {
   const navigation = useNavigation();
   const [isLoading, setIsLoading] = useState(true);
@@ -78,6 +86,18 @@ export const ProMeetingsScreen = () => {
   });
   const [activeTab, setActiveTab] = useState<TabType>('waiting');
   const [userId, setUserId] = useState<string | null>(null);
+
+  // Add new state variables for time slot selection
+  const [timeSlotModalVisible, setTimeSlotModalVisible] = useState(false);
+  const [currentRequestId, setCurrentRequestId] = useState<string | null>(null);
+  const [availableSlots, setAvailableSlots] = useState<Array<{
+    date: string;
+    startTime: string;
+    endTime: string;
+  }>>([]);
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState<SelectedTimeSlot | null>(null);
+  const [is15MinWindowModalVisible, setIs15MinWindowModalVisible] = useState(false);
+  const [selected15MinSlot, setSelected15MinSlot] = useState<SelectedTimeSlot | null>(null);
 
   const fetchMeetings = useCallback(async () => {
     try {
@@ -206,13 +226,26 @@ export const ProMeetingsScreen = () => {
     }
   }, [userId, fetchMeetings]);
 
-  const handleMeetingRequest = async (requestId: string, action: 'approve' | 'reject') => {
+  // Modify handleMeetingRequest to include the selected time slot
+  const handleMeetingRequest = async (requestId: string, action: 'approve' | 'reject', timeSlot?: SelectedTimeSlot) => {
     try {
       if (!userId) {
         throw new Error('User ID not available');
       }
       
       const actionText = action === 'approve' ? 'approve' : 'reject';
+      
+      if (action === 'approve' && !timeSlot) {
+        // For approvals, first show the time slot selection modal
+        const meeting = meetingsByStatus.waiting.find(m => m.request_id === requestId);
+        if (meeting && meeting.availability_slots && meeting.availability_slots.length > 0) {
+          setCurrentRequestId(requestId);
+          setAvailableSlots(meeting.availability_slots);
+          setTimeSlotModalVisible(true);
+          return;
+        }
+      }
+      
       const confirmTitle = action === 'approve' ? 'Approve Request' : 'Reject Request';
       const confirmMessage = action === 'approve' 
         ? 'Are you sure you want to approve this client request?' 
@@ -239,7 +272,8 @@ export const ProMeetingsScreen = () => {
                   },
                   body: JSON.stringify({
                     request_id: requestId,
-                    action: actionText
+                    action: actionText,
+                    selectedTimeSlot: timeSlot // Include the selected time slot in the request
                   })
                 });
                 
@@ -289,7 +323,50 @@ export const ProMeetingsScreen = () => {
   };
 
   const approveMeeting = (requestId: string) => {
+    // Now just initiates the time slot selection flow
     handleMeetingRequest(requestId, 'approve');
+  };
+
+  // New helper to confirm after selecting a time slot
+  const confirmWithTimeSlot = (timeSlot: SelectedTimeSlot) => {
+    if (currentRequestId && timeSlot) {
+      setTimeSlotModalVisible(false);
+      handleMeetingRequest(currentRequestId, 'approve', timeSlot);
+      setCurrentRequestId(null);
+    }
+  };
+
+  // Function to generate 15-minute time slots from the selected slot
+  const generate15MinTimeSlots = (slot: SelectedTimeSlot) => {
+    const startTime = new Date(slot.startTime);
+    const endTime = new Date(slot.endTime);
+    const slots: Array<SelectedTimeSlot> = [];
+    
+    let currentTime = new Date(startTime);
+    while (currentTime.getTime() + 15 * 60000 <= endTime.getTime()) {
+      const slotEndTime = new Date(currentTime.getTime() + 15 * 60000);
+      slots.push({
+        date: slot.date,
+        startTime: currentTime.toISOString(),
+        endTime: slotEndTime.toISOString()
+      });
+      currentTime = new Date(currentTime.getTime() + 15 * 60000);
+    }
+    
+    return slots;
+  };
+
+  // Function to handle selecting a full time slot to break into 15-min windows
+  const handleTimeSlotSelect = (slot: SelectedTimeSlot) => {
+    setSelectedTimeSlot(slot);
+    setIs15MinWindowModalVisible(true);
+  };
+
+  // Function to handle selecting a 15-min window
+  const handle15MinWindowSelect = (slot: SelectedTimeSlot) => {
+    setSelected15MinSlot(slot);
+    setIs15MinWindowModalVisible(false);
+    confirmWithTimeSlot(slot);
   };
 
   const rejectMeeting = (requestId: string) => {
@@ -457,7 +534,7 @@ export const ProMeetingsScreen = () => {
               </LinearGradient>
             </TouchableOpacity>
             
-            {/* Approve button */}
+            {/* Approve button - changed label to "Select Time" */}
             <TouchableOpacity
               style={styles.approveButton}
               onPress={() => approveMeeting(item.request_id)}
@@ -466,8 +543,8 @@ export const ProMeetingsScreen = () => {
                 colors={['#34C759', '#2EAA4F']}
                 style={styles.approveButtonGradient}
               >
-                <Icon name="checkmark" size={20} color="#FFFFFF" />
-                <Text style={styles.actionButtonText}>Approve</Text>
+                <Icon name="calendar" size={20} color="#FFFFFF" />
+                <Text style={styles.actionButtonText}>Select Time</Text>
               </LinearGradient>
             </TouchableOpacity>
           </View>
@@ -579,6 +656,143 @@ export const ProMeetingsScreen = () => {
     </ScrollView>
   );
 
+  // New time slot selection modal
+  const renderTimeSlotModal = () => (
+    <Modal
+      visible={timeSlotModalVisible}
+      transparent={true}
+      animationType="slide"
+      onRequestClose={() => setTimeSlotModalVisible(false)}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={styles.timeSlotModalContainer}>
+          <View style={styles.timeSlotModalHeader}>
+            <Text style={styles.timeSlotModalTitle}>Select Available Time</Text>
+            <TouchableOpacity 
+              onPress={() => setTimeSlotModalVisible(false)}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Icon name="close" size={24} color="#333" />
+            </TouchableOpacity>
+          </View>
+          
+          <Text style={styles.timeSlotModalSubtitle}>
+            Select a time slot from the client's availability:
+          </Text>
+          
+          <ScrollView style={styles.timeSlotList}>
+            {availableSlots.length > 0 ? (
+              availableSlots.map((slot, index) => (
+                <TouchableOpacity 
+                  key={index}
+                  style={styles.timeSlotOption}
+                  onPress={() => handleTimeSlotSelect(slot)}
+                >
+                  <View style={styles.timeSlotOptionContent}>
+                    <Icon name="calendar" size={18} color={COLORS.primary} style={styles.timeSlotOptionIcon} />
+                    <View style={styles.timeSlotOptionTextContainer}>
+                      <Text style={styles.timeSlotOptionDate}>
+                        {format(new Date(slot.date), 'EEE, MMM d, yyyy')}
+                      </Text>
+                      <Text style={styles.timeSlotOptionTime}>
+                        {format(new Date(slot.startTime), 'h:mm a')} - {format(new Date(slot.endTime), 'h:mm a')}
+                      </Text>
+                    </View>
+                    <Icon name="chevron-forward" size={20} color="#8E8E93" />
+                  </View>
+                </TouchableOpacity>
+              ))
+            ) : (
+              <Text style={styles.noSlotsText}>No time slots available for this request.</Text>
+            )}
+          </ScrollView>
+          
+          <TouchableOpacity 
+            style={styles.cancelButton}
+            onPress={() => setTimeSlotModalVisible(false)}
+          >
+            <Text style={styles.cancelButtonText}>Cancel</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+  );
+  
+  // New 15-minute window selection modal
+  const render15MinWindowModal = () => {
+    if (!selectedTimeSlot) return null;
+    
+    const timeWindows = generate15MinTimeSlots(selectedTimeSlot);
+    
+    return (
+      <Modal
+        visible={is15MinWindowModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setIs15MinWindowModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.timeSlotModalContainer}>
+            <View style={styles.timeSlotModalHeader}>
+              <Text style={styles.timeSlotModalTitle}>Select 15-Min Window</Text>
+              <TouchableOpacity 
+                onPress={() => setIs15MinWindowModalVisible(false)}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <Icon name="close" size={24} color="#333" />
+              </TouchableOpacity>
+            </View>
+            
+            <Text style={styles.timeSlotModalSubtitle}>
+              Select a 15-minute window for this meeting:
+            </Text>
+            
+            <Text style={styles.selectedDateText}>
+              {format(new Date(selectedTimeSlot.date), 'EEEE, MMMM d, yyyy')}
+            </Text>
+            
+            <ScrollView style={styles.timeSlotList}>
+              {timeWindows.length > 0 ? (
+                timeWindows.map((window, index) => (
+                  <TouchableOpacity 
+                    key={index}
+                    style={styles.timeWindowOption}
+                    onPress={() => handle15MinWindowSelect(window)}
+                  >
+                    <LinearGradient
+                      colors={['#F8F9FA', '#EDF2F7']}
+                      style={styles.timeWindowGradient}
+                    >
+                      <Icon name="time-outline" size={18} color={COLORS.primary} style={styles.timeWindowIcon} />
+                      <Text style={styles.timeWindowText}>
+                        {format(new Date(window.startTime), 'h:mm a')} - {format(new Date(window.endTime), 'h:mm a')}
+                      </Text>
+                      <View style={styles.timeWindowDuration}>
+                        <Text style={styles.timeWindowDurationText}>15 min</Text>
+                      </View>
+                    </LinearGradient>
+                  </TouchableOpacity>
+                ))
+              ) : (
+                <Text style={styles.noSlotsText}>No 15-minute windows available for this time slot.</Text>
+              )}
+            </ScrollView>
+            
+            <TouchableOpacity 
+              style={styles.backButton}
+              onPress={() => {
+                setIs15MinWindowModalVisible(false);
+                setTimeSlotModalVisible(true);
+              }}
+            >
+              <Text style={styles.backButtonText}>Back to Time Slots</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+    );
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScreenHeader title="Client Requests" />
@@ -611,8 +825,24 @@ export const ProMeetingsScreen = () => {
           />
         </>
       )}
+      
+      {/* Render the modals */}
+      {renderTimeSlotModal()}
+      {render15MinWindowModal()}
     </SafeAreaView>
   );
+};
+
+// Define some color constants for consistency
+const COLORS = {
+  primary: '#2E5C8D',
+  primaryDark: '#1E3F66',
+  primaryLight: '#4A7DB3',
+  accent: '#FF9500',
+  success: '#34C759',
+  error: '#FF3B30',
+  background: '#F7F8FA',
+  card: '#FFFFFF',
 };
 
 const styles = StyleSheet.create({
@@ -822,5 +1052,151 @@ const styles = StyleSheet.create({
     color: '#666666',
     textAlign: 'center',
     lineHeight: 22,
+  },
+  // Add new styles for time slot selection
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  timeSlotModalContainer: {
+    backgroundColor: '#FFFFFF',
+    width: '90%',
+    borderRadius: 16,
+    paddingVertical: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 10,
+    maxHeight: '80%',
+  },
+  timeSlotModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    marginBottom: 16,
+  },
+  timeSlotModalTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#333',
+  },
+  timeSlotModalSubtitle: {
+    fontSize: 15,
+    color: '#666',
+    paddingHorizontal: 24,
+    marginBottom: 16,
+  },
+  timeSlotList: {
+    maxHeight: 400,
+    paddingHorizontal: 24,
+  },
+  timeSlotOption: {
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#E1E8ED',
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  timeSlotOptionContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: '#F8F9FA',
+  },
+  timeSlotOptionIcon: {
+    marginRight: 14,
+  },
+  timeSlotOptionTextContainer: {
+    flex: 1,
+  },
+  timeSlotOptionDate: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 4,
+  },
+  timeSlotOptionTime: {
+    fontSize: 14,
+    color: '#555',
+  },
+  noSlotsText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    paddingVertical: 30,
+  },
+  cancelButton: {
+    marginTop: 20,
+    marginHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E1E8ED',
+    alignItems: 'center',
+  },
+  cancelButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#666',
+  },
+  selectedDateText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.primary,
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  timeWindowOption: {
+    marginBottom: 12,
+    borderRadius: 12,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  timeWindowGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+  },
+  timeWindowIcon: {
+    marginRight: 14,
+  },
+  timeWindowText: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#333',
+  },
+  timeWindowDuration: {
+    backgroundColor: 'rgba(46, 92, 141, 0.1)',
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 12,
+  },
+  timeWindowDurationText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: COLORS.primary,
+  },
+  backButton: {
+    marginTop: 20,
+    marginHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+    backgroundColor: '#F0F4F8',
+    alignItems: 'center',
+  },
+  backButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.primary,
   },
 });
