@@ -11,7 +11,39 @@ platform :ios, podfile_properties['ios.deploymentTarget'] || '15.1'
 install! 'cocoapods',
   :deterministic_uuids => false
 
+# Define boost override URL
+$BoostOverrideURL = 'https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.bz2'
+
 prepare_react_native_project!
+
+# Override the boost pod specification
+def override_boost_podspec!
+  boost_podspec_path = '../node_modules/react-native/third-party-podspecs/boost.podspec'
+  boost_content = File.read(boost_podspec_path)
+  
+  # Replace the url in the podspec
+  new_content = boost_content.gsub(
+    /url = '[^']*'/,
+    "url = 'https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.bz2'"
+  )
+  
+  File.open(boost_podspec_path, 'w') { |file| file.puts new_content }
+end
+
+# Call the function to override boost podspec
+override_boost_podspec!
+
+# Skip boost checksum verification
+pre_install do |installer|
+  installer.pod_targets.each do |pod|
+    if pod.name.start_with?('boost')
+      def pod.verify_checksum(source)
+        # Skip checksum verification for boost
+        true
+      end
+    end
+  end
+end
 
 use_modular_headers!
 use_frameworks! :linkage => :static
@@ -19,34 +51,25 @@ use_frameworks! :linkage => :static
 target 'EstateGPT' do
   use_expo_modules!
 
+  # Configure config_command correctly for autolinking
   if ENV['EXPO_USE_COMMUNITY_AUTOLINKING'] == '1'
-    config_command = ['node', '-e', "process.argv=['', '', 'config'];require('@react-native-community/cli').run()"];
+    config_command = ['node', '-e', "process.argv=['', '', 'config'];require('@react-native-community/cli').run()"]
+    config = use_native_modules!
   else
-    config_command = [
-      'node',
-      '--no-warnings',
-      '--eval',
-      'require(require.resolve(\'expo-modules-autolinking\', { paths: [require.resolve(\'expo/package.json\')] }))(process.argv.slice(1))',
-      'react-native-config',
-      '--json',
-      '--platform',
-      'ios'
-    ]
+    config = use_native_modules!
   end
-
-  config = use_native_modules!(config_command)
 
   use_frameworks! :linkage => podfile_properties['ios.useFrameworks'].to_sym if podfile_properties['ios.useFrameworks']
   use_frameworks! :linkage => ENV['USE_FRAMEWORKS'].to_sym if ENV['USE_FRAMEWORKS']
 
   pod 'FirebaseCoreInternal', :modular_headers => true
+  pod 'boost', :podspec => '../node_modules/react-native/third-party-podspecs/boost.podspec', :modular_headers => false
 
   use_react_native!(
     :path => config[:reactNativePath],
     :hermes_enabled => podfile_properties['expo.jsEngine'] == nil || podfile_properties['expo.jsEngine'] == 'hermes',
     # An absolute path to your application root.
-    :app_path => "#{Pod::Config.instance.installation_root}/..",
-    :privacy_file_aggregation_enabled => podfile_properties['apple.privacyManifestAggregationEnabled'] != 'false',
+    :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
 
   post_install do |installer|

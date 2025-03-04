@@ -1,16 +1,7 @@
-import { Auth } from 'aws-amplify';
+import { getCurrentUser } from '@aws-amplify/auth';
 import { ServerEnvironment } from '../config/server.config';
 
-export interface PaymentMethod {
-  id: string;
-  brand: string;
-  last4: string;
-  expMonth: number;
-  expYear: number;
-  isDefault: boolean;
-}
-
-interface CardInputDetails {
+interface CardDetails {
   cardNumber: string;
   expMonth: number;
   expYear: number;
@@ -19,137 +10,144 @@ interface CardInputDetails {
   postalCode?: string;
 }
 
+interface PaymentMethod {
+  id: string;
+  brand: string;
+  last4: string;
+  expMonth: number;
+  expYear: number;
+  isDefault: boolean;
+}
+
 export class PaymentService {
-  static async getAuthHeaders() {
+  /**
+   * Get the current authenticated user ID
+   */
+  static async getUserId(): Promise<string> {
     try {
-      const session = await Auth.currentSession();
-      const token = session.getIdToken().getJwtToken();
-      return {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      };
+      const user = await getCurrentUser();
+      return user.userId;
     } catch (error) {
-      console.error('Error getting auth headers:', error);
+      console.error('Error getting user ID:', error);
       throw new Error('Authentication required');
     }
   }
 
-  static async createSetupIntent() {
-    const headers = await this.getAuthHeaders();
-    
-    try {
-      const response = await fetch(ServerEnvironment.createSetupIntentEndpoint, {
-        method: 'POST',
-        headers
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to create setup intent: ${response.status}`);
-      }
-
-      const data = await response.json();
-      return data.clientSecret;
-    } catch (error) {
-      console.error('Error creating setup intent:', error);
-      throw error;
-    }
-  }
-
+  /**
+   * Get all payment methods for the current user
+   */
   static async getPaymentMethods(): Promise<PaymentMethod[]> {
-    const headers = await this.getAuthHeaders();
-    
     try {
-      const response = await fetch(ServerEnvironment.paymentMethodsEndpoint, {
+      const userId = await this.getUserId();
+      
+      const response = await fetch(ServerEnvironment.payment.getPaymentMethods, {
         method: 'GET',
-        headers
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: userId,
+        }
       });
 
-      if (!response.ok) {
-        throw new Error(`Failed to fetch payment methods: ${response.status}`);
+      const data = await response.json();
+
+      if (data.status !== 'success') {
+        throw new Error(data.message || 'Failed to retrieve payment methods');
       }
 
-      const data = await response.json();
       return data.paymentMethods || [];
     } catch (error) {
-      console.error('Error fetching payment methods:', error);
+      console.error('Error in getPaymentMethods:', error);
       throw error;
     }
   }
 
-  static async setDefaultPaymentMethod(paymentMethodId: string): Promise<boolean> {
-    const headers = await this.getAuthHeaders();
-    
+  /**
+   * Add a new payment method
+   */
+  static async addPaymentMethod(cardDetails: CardDetails): Promise<string> {
     try {
-      const response = await fetch(ServerEnvironment.setDefaultPaymentMethodEndpoint, {
+      const userId = await this.getUserId();
+      
+      // In a real implementation, you would use the Stripe SDK to create a token or payment method
+      // This is just a mockup since we're using the Stripe React Native SDK directly in components
+      
+      const response = await fetch(ServerEnvironment.payment.createSetupIntent, {
         method: 'POST',
-        headers,
-        body: JSON.stringify({ paymentMethodId })
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: userId,
+        }
       });
 
-      if (!response.ok) {
-        throw new Error(`Failed to set default payment method: ${response.status}`);
+      const data = await response.json();
+      
+      if (data.status !== 'success') {
+        throw new Error(data.message || 'Failed to add payment method');
       }
 
-      return true;
+      // In reality, we would confirm the setup intent with the Stripe SDK here
+      // For this mockup, we'll just return a success placeholder
+      return 'pm_success_placeholder';
     } catch (error) {
-      console.error('Error setting default payment method:', error);
+      console.error('Error in addPaymentMethod:', error);
       throw error;
     }
   }
 
-  static async removePaymentMethod(paymentMethodId: string): Promise<boolean> {
-    const headers = await this.getAuthHeaders();
-    
+  /**
+   * Set a payment method as default
+   */
+  static async setDefaultPaymentMethod(paymentMethodId: string): Promise<void> {
     try {
-      const response = await fetch(ServerEnvironment.removePaymentMethodEndpoint, {
+      const userId = await this.getUserId();
+      
+      const response = await fetch(ServerEnvironment.payment.setDefaultMethod, {
         method: 'POST',
-        headers,
-        body: JSON.stringify({ paymentMethodId })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to remove payment method: ${response.status}`);
-      }
-
-      return true;
-    } catch (error) {
-      console.error('Error removing payment method:', error);
-      throw error;
-    }
-  }
-
-  static async addPaymentMethod(cardDetails: CardInputDetails): Promise<PaymentMethod> {
-    const headers = await this.getAuthHeaders();
-    
-    try {
-      // This is a simplified version - in real implementation this would
-      // go through Stripe.js or Stripe Elements to tokenize the card securely
-      const response = await fetch(`${ServerEnvironment.baseURL}/payment/add-payment-method`, {
-        method: 'POST',
-        headers,
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: userId,
+        },
         body: JSON.stringify({
-          // In a real implementation, we would NOT send full card details directly
-          // This is for demonstration purposes only
-          card: {
-            number: cardDetails.cardNumber,
-            exp_month: cardDetails.expMonth,
-            exp_year: cardDetails.expYear,
-            cvc: cardDetails.cvc,
-            name: cardDetails.name,
-            address_zip: cardDetails.postalCode
-          }
+          paymentMethodId
         })
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Failed to add payment method: ${errorText}`);
+      const data = await response.json();
+      
+      if (data.status !== 'success') {
+        throw new Error(data.message || 'Failed to set default payment method');
       }
+    } catch (error) {
+      console.error('Error in setDefaultPaymentMethod:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete a payment method
+   */
+  static async deletePaymentMethod(paymentMethodId: string): Promise<void> {
+    try {
+      const userId = await this.getUserId();
+      
+      const response = await fetch(ServerEnvironment.payment.deleteMethod, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: userId,
+        },
+        body: JSON.stringify({
+          paymentMethodId
+        })
+      });
 
       const data = await response.json();
-      return data.paymentMethod;
+      
+      if (data.status !== 'success') {
+        throw new Error(data.message || 'Failed to delete payment method');
+      }
     } catch (error) {
-      console.error('Error adding payment method:', error);
+      console.error('Error in deletePaymentMethod:', error);
       throw error;
     }
   }

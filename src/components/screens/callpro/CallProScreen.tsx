@@ -21,12 +21,13 @@ import {
 import { ScreenHeader } from '../../common/ScreenHeader';
 import Icon from '@expo/vector-icons/Ionicons';
 import { ServerEnvironment } from '../../../config/server.config';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, CommonActions } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { format } from 'date-fns';
 import { LinearGradient as ExpoLinearGradient } from 'expo-linear-gradient';
 import * as ImageManipulator from 'expo-image-manipulator';
+import { getCurrentUser } from '@aws-amplify/auth';
 
 const services = [
   {
@@ -228,6 +229,8 @@ export const CallProScreen = () => {
   const [photos, setPhotos] = useState<Array<{uri: string}>>([]);
   const [statePickerVisible, setStatePickerVisible] = useState(false);
   const [photoOptionsVisible, setPhotoOptionsVisible] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [requestId, setRequestId] = useState<string | null>(null);
 
   // Move calculateProgress inside component so it has access to state variables
   const calculateProgress = () => {
@@ -253,14 +256,28 @@ export const CallProScreen = () => {
     setIsLoading(true);
     
     try {
+      // Get the current user for authorization
+      const user = await getCurrentUser();
+      
       const formData = new FormData();
       
-      // Add text fields
-      formData.append('service_type', selectedService);
-      formData.append('description', concern);
-      formData.append('city', city);
-      formData.append('state', stateCode);
-      formData.append('availability', JSON.stringify(timeSlots));
+      // Create the request data structure
+      const requestData = {
+        request_details: {
+          service_type: selectedService,
+          description: concern,
+          city: city,
+          state: stateCode,
+          availability_slots: timeSlots.map(slot => ({
+            date: slot.date.toISOString(),
+            startTime: slot.startTime.toISOString(),
+            endTime: slot.endTime.toISOString()
+          }))
+        }
+      };
+      
+      // Add data to formData
+      formData.append('data', JSON.stringify(requestData));
       
       // Process and add image if available
       if (image) {
@@ -279,20 +296,17 @@ export const CallProScreen = () => {
           
         } catch (imageError) {
           console.error('Error processing image:', imageError);
-          Alert.alert(
-            "Image Processing Error",
-            "There was an error processing your image. Please try a different image or continue without an image."
-          );
           // Continue without the image
         }
       }
       
-      // Make API request
-      const response = await fetch(ServerEnvironment.findProEndpoint, {
+      // Make API request to schedule endpoint
+      const response = await fetch(ServerEnvironment.scheduleProEndpoint, {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'multipart/form-data',
+          'Authorization': user.userId, // Add authorization header
         },
         body: formData,
       });
@@ -301,30 +315,15 @@ export const CallProScreen = () => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
-      const responseText = await response.text();
+      // Parse response
+      const responseData = await response.json();
       
-      try {
-        // Try to parse as JSON
-        const jsonResponse = JSON.parse(responseText);
-        
-        // Navigate to ProResponse screen
-        navigation.navigate('ProResponse', {
-          response: JSON.stringify(jsonResponse),
-          serviceType: selectedService,
-          location: `${city}, ${stateCode}`,
-          requestDetails: {
-            service_type: selectedService,
-            city: city,
-            state: stateCode,
-            description: concern
-          },
-          availability: timeSlots,
-          image: image
-        });
-        
-      } catch (parseError) {
-        console.error('Error parsing response:', parseError);
-        throw new Error('Invalid response from server');
+      if (responseData.status === 'success') {
+        // Store request ID and show confirmation modal
+        setRequestId(responseData.request_id);
+        setShowConfirmation(true);
+      } else {
+        throw new Error(responseData.message || 'Unknown error occurred');
       }
       
     } catch (error) {
@@ -1077,6 +1076,66 @@ export const CallProScreen = () => {
     );
   };
 
+  const handleViewScheduledCalls = () => {
+    setShowConfirmation(false);
+    navigation.navigate('ScheduledCalls');
+  };
+
+  const handleGoToHome = () => {
+    setShowConfirmation(false);
+    navigation.navigate('Chat');
+  };
+
+  const renderConfirmationModal = () => (
+    <Modal
+      visible={showConfirmation}
+      transparent={true}
+      animationType="fade"
+    >
+      <View style={styles.confirmationOverlay}>
+        <View style={styles.confirmationContent}>
+          <View style={styles.successIconContainer}>
+            <Icon name="checkmark-circle" size={64} color={COLORS.success} />
+          </View>
+          
+          <Text style={styles.confirmationTitle}>Request Submitted!</Text>
+          
+          <Text style={styles.confirmationText}>
+            Your request has been sent to matching professionals in your area. 
+            You'll receive a notification once a professional accepts your request.
+          </Text>
+          
+          {requestId && (
+            <Text style={styles.requestIdText}>
+              Request ID: {requestId}
+            </Text>
+          )}
+          
+          <View style={styles.confirmationButtons}>
+            <TouchableOpacity
+              style={styles.secondaryButton}
+              onPress={handleGoToHome}
+            >
+              <Text style={styles.secondaryButtonText}>Home</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.primaryButton}
+              onPress={handleViewScheduledCalls}
+            >
+              <ExpoLinearGradient
+                colors={[COLORS.primary, COLORS.primaryDark]}
+                style={styles.primaryButtonGradient}
+              >
+                <Text style={styles.primaryButtonText}>View Scheduled Calls</Text>
+              </ExpoLinearGradient>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScreenHeader 
@@ -1096,7 +1155,7 @@ export const CallProScreen = () => {
               <Text style={[
                 styles.headerFindProText,
                 !areRequiredFieldsFilled() && styles.headerFindProDisabled
-              ]}>Find Pro</Text>
+              ]}>Submit</Text>
             )}
           </TouchableOpacity>
         }
@@ -1451,6 +1510,7 @@ export const CallProScreen = () => {
       {/* ...existing modals... */}
       {renderStatePicker()}
       {renderPhotoOptions()}
+      {renderConfirmationModal()}
     </SafeAreaView>
   );
 };
@@ -2183,6 +2243,93 @@ const styles = StyleSheet.create({
   },
   confirmAvailabilityText: {
     color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  confirmationOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  confirmationContent: {
+    width: '90%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 20,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    elevation: 6,
+  },
+  successIconContainer: {
+    marginVertical: 16,
+  },
+  confirmationTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  confirmationText: {
+    fontSize: 16,
+    color: COLORS.textSecondary,
+    lineHeight: 22,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  requestIdText: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    marginBottom: 24,
+    padding: 8,
+    backgroundColor: '#F5F7FA',
+    borderRadius: 8,
+    width: '100%',
+    textAlign: 'center',
+  },
+  confirmationButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    paddingTop: 8,
+  },
+  primaryButton: {
+    flex: 1,
+    marginLeft: 10,
+    borderRadius: 12,
+    overflow: 'hidden',
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  primaryButtonGradient: {
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  primaryButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  secondaryButton: {
+    flex: 1,
+    marginRight: 10,
+    paddingVertical: 14,
+    alignItems: 'center',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    backgroundColor: '#FFFFFF',
+  },
+  secondaryButtonText: {
+    color: COLORS.text,
     fontSize: 16,
     fontWeight: '600',
   },

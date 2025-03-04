@@ -1,3 +1,4 @@
+import { API_URL } from '../config/api';
 import { ServerEnvironment } from '../config/server.config';
 
 // API URL from server config
@@ -58,41 +59,24 @@ const formatErrorMessage = (error: any): string => {
  */
 export const createSetupIntent = async (userId: string) => {
   try {
-    console.log('Creating setup intent for user:', userId);
-
-    const response = await fetchWithTimeout(
-      `${ServerEnvironment.createSetupIntentEndpoint}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': userId
-        },
-        body: JSON.stringify({})
-      },
-      20000 // 20 second timeout for setup intent
-    );
+    const response = await fetch(`${API_URL}/payment/create-setup-intent`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': userId
+      }
+    });
     
     const data = await response.json();
-    console.log('Setup intent response:', data);
     
-    if (!response.ok) {
+    if (data.status !== 'success') {
       throw new Error(data.message || 'Failed to create setup intent');
     }
     
-    if (data.status === 'error') {
-      throw new Error(data.message);
-    }
-    
-    // Return client secret, ephemeral key, and customer ID
-    return {
-      clientSecret: data.clientSecret,
-      ephemeralKey: data.ephemeralKey,
-      customerId: data.customerId
-    };
+    return data;
   } catch (error) {
     console.error('Error creating setup intent:', error);
-    throw new Error(formatErrorMessage(error));
+    throw error;
   }
 };
 
@@ -184,36 +168,24 @@ export const savePaymentMethod = async (paymentMethodId: string, userId: string)
  */
 export const fetchPaymentMethods = async (userId: string) => {
   try {
-    console.log("Fetching payment methods for user:", userId);
-
-    const response = await fetchWithTimeout(
-      `${ServerEnvironment.paymentMethodsEndpoint}`,
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': userId
-        }
+    const response = await fetch(`${API_URL}/payment/methods`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': userId
       }
-    );
-    
+    });
+
     const data = await response.json();
-    console.log("Payment methods response:", data);
     
-    if (!response.ok) {
-      throw new Error((data && data.message) || 'Failed to fetch payment methods');
+    if (data.status !== 'success') {
+      throw new Error(data.message || 'Failed to load payment methods');
     }
     
-    if (data && data.status === 'error') {
-      throw new Error(data.message);
-    }
-    
-    return { 
-      paymentMethods: data.paymentMethods || [] 
-    };
+    return data;
   } catch (error) {
     console.error('Error fetching payment methods:', error);
-    return { paymentMethods: [] };
+    throw error;
   }
 };
 
@@ -222,36 +194,51 @@ export const fetchPaymentMethods = async (userId: string) => {
  */
 export const removePaymentMethod = async (paymentMethodId: string, userId: string) => {
   try {
-    console.log(`Removing payment method ${paymentMethodId} for user ${userId}`);
-
-    const response = await fetchWithTimeout(
-      `${ServerEnvironment.removePaymentMethodEndpoint}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': userId
-        },
-        body: JSON.stringify({
-          paymentMethodId
-        })
-      }
-    );
+    const response = await fetch(`${API_URL}/payment/delete-method`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': userId
+      },
+      body: JSON.stringify({ paymentMethodId })
+    });
     
     const data = await response.json();
-    console.log('Remove payment method response:', data);
     
-    if (!response.ok) {
-      throw new Error((data && data.message) || 'Failed to remove payment method');
+    if (data.status !== 'success') {
+      throw new Error(data.message || 'Failed to delete payment method');
     }
     
-    if (data && data.status === 'error') {
-      throw new Error(data.message);
-    }
-    
-    return { success: true };
+    return data;
   } catch (error) {
-    console.error('Error removing payment method:', error);
-    throw new Error(formatErrorMessage(error));
+    console.error('Error deleting payment method:', error);
+    throw error;
+  }
+};
+
+/**
+ * Set a payment method as default
+ */
+export const setDefaultPaymentMethod = async (userId: string, paymentMethodId: string) => {
+  try {
+    const response = await fetch(`${API_URL}/payment/set-default-method`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': userId
+      },
+      body: JSON.stringify({ paymentMethodId })
+    });
+    
+    const data = await response.json();
+    
+    if (data.status !== 'success') {
+      throw new Error(data.message || 'Failed to set default payment method');
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Error setting default payment method:', error);
+    throw error;
   }
 };

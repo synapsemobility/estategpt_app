@@ -18,4 +18,29 @@ export const ServerEnvironment = {
   
   // New endpoint for getting professional profile
   getProProfileEndpoint: 'https://chat.estategpt.io/user/get-pro-profile',
+  
+  // Payment related endpoints - corrected URLs to match backend paths
+  payment: {
+    baseURL: 'https://chat.estategpt.io/payment', // Removed /api prefix
+    createSetupIntent: 'https://chat.estategpt.io/payment/create-setup-intent',
+    getPaymentMethods: 'https://chat.estategpt.io/payment/methods', // Removed /api prefix
+    setDefaultMethod: 'https://chat.estategpt.io/payment/set-default-method',
+    deleteMethod: 'https://chat.estategpt.io/payment/delete-method',
+    addCardToken: 'https://chat.estategpt.io/payment/add-card-token',
+    attachMethod: 'https://chat.estategpt.io/payment/attach-method'
+  },
+  
+  // User related endpoints
+  users: {
+    baseURL: 'https://chat.estategpt.io/api/users' // This one likely works as is
+  },
+  
+  // Other API configurations grouped by domain
+  professionals: {
+    baseURL: 'https://chat.estategpt.io/api/professionals'
+  }
 };
+
+// Helper functions to easily access configuration values
+export const getApiUrl = () => ServerEnvironment.baseURL;
+export const getPaymentApiUrl = () => ServerEnvironment.payment.baseURL;

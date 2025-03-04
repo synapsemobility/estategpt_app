@@ -16,6 +16,12 @@ const baseMenuItems: MenuItem[] = [
   },
   { title: 'About Us', icon: 'information-circle', route: 'AboutUs' },
   { title: 'Submit Feedback', icon: 'chatbubble', route: 'Feedback' },
+  { 
+    title: 'Payment Methods', 
+    icon: 'card', 
+    route: 'PaymentMethods',
+    color: '#5856D6' // Purple color for payment
+  },
   { title: 'Subscriptions', icon: 'star', route: 'Subscription' },
   { title: 'My Account', icon: 'person', route: 'User' },
   { title: 'Delete Account', icon: 'trash', route: 'DeleteAccount' },
@@ -43,9 +49,9 @@ export const getMenuItems = (isProfessional: boolean): MenuItem[] => {
         color: '#007AFF' // Blue color
       },
       {
-        title: 'Pending Calls', 
-        icon: 'time', 
-        route: 'PendingCalls',
+        title: 'Client Requests', 
+        icon: 'people', 
+        route: 'ProMeetings',
         color: '#FF9500' // Orange color
       }
     );

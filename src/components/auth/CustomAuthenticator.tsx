@@ -12,15 +12,16 @@ import { DeleteAccountScreen } from '../screens/account/DeleteAccountScreen';
 import { SignInHeader } from './SignInHeader';
 import { LinearGradient } from 'expo-linear-gradient';
 import { CallProScreen } from '../screens/callpro/CallProScreen';
-import { ProResponseScreen } from '../screens/callpro/ProResponseScreen';
 import { ScheduledCallsScreen } from '../screens/callpro/ScheduledCallsScreen';
 import { ProRequestsScreen } from '../screens/callpro/ProRequestsScreen';
 import { VideoCallScreen } from '../screens/callpro/VideoCallScreen';
 import { TestVideoCallScreen } from '../screens/callpro/TestVideoCallScreen';
-import { PendingCallsScreen } from '../screens/callpro/PendingCallsScreen';
+import { ProMeetingsScreen } from '../screens/callpro/ProMeetingsScreen'; // Updated import
 import { ProProfileScreen } from '../screens/professional/ProProfileScreen';
 import { BecomeProScreen } from '../screens/professional/BecomeProScreen';
 import { UserAgreementModal, hasAcceptedUserAgreement } from './UserAgreementModal';
+import { AddPaymentCardScreen } from '../screens/payment/AddPaymentCardScreen';
+import { PaymentMethodsScreen } from '../screens/payment/PaymentMethodsScreen';
 
 type RootStackParamList = {
   Chat: { userID: string | undefined };
@@ -30,19 +31,6 @@ type RootStackParamList = {
   User: { userID: string };
   DeleteAccount: undefined;
   CallPro: undefined;
-  ProResponse: {
-    response: string;
-    serviceType: string;
-    location: string;
-    requestDetails: {
-      service_type: string;
-      city: string;
-      state: string;
-      description: string;
-    };
-    availability: Array<any>;
-    image: string | null;
-  };
   ScheduledCalls: undefined;
   ProRequests: undefined;
   TestVideoCall: undefined;
@@ -51,13 +39,15 @@ type RootStackParamList = {
     roomName: string;
     professionalName: string;
   };
-  PendingCalls: undefined;
+  ProMeetings: undefined;
   ProProfile: undefined;
   BecomePro: undefined;
+  AddPaymentCard: undefined;
+  PaymentMethods: undefined;
 };
 
+// Initialize the stack navigator with your route param list
 const Stack = createNativeStackNavigator<RootStackParamList>();
-const { width, height } = Dimensions.get('window');
 
 // Create a separate header right component
 const HeaderRight = () => {
@@ -146,9 +136,17 @@ const AppContent = () => {
       />
       <Stack.Screen name="DeleteAccount" component={DeleteAccountScreen} />
       <Stack.Screen name="CallPro" component={CallProScreen} />
-      <Stack.Screen name="ProResponse" component={ProResponseScreen} />
       <Stack.Screen name="ScheduledCalls" component={ScheduledCallsScreen} />
-      <Stack.Screen name="PendingCalls" component={PendingCallsScreen} />
+      
+      {/* Replace PendingCallsScreen with ProMeetingsScreen */}
+      <Stack.Screen 
+        name="ProMeetings" 
+        component={ProMeetingsScreen}
+        options={{ 
+          headerShown: false,
+          animation: 'slide_from_right'
+        }}
+      />
       
       {/* Include ProRequestsScreen */}
       <Stack.Screen 
@@ -178,6 +176,25 @@ const AppContent = () => {
       />
       <Stack.Screen name="ProProfile" component={ProProfileScreen} />
       <Stack.Screen name="BecomePro" component={BecomeProScreen} />
+      
+      {/* Payment related screens */}
+      <Stack.Screen 
+        name="PaymentMethods" 
+        component={PaymentMethodsScreen}
+        options={{ 
+          headerShown: false,
+          animation: 'slide_from_right'
+        }}
+      />
+      
+      <Stack.Screen 
+        name="AddPaymentCard" 
+        component={AddPaymentCardScreen}
+        options={{ 
+          headerShown: false, // Changed to false to use our custom header
+          animation: 'slide_from_right'
+        }}
+      />
     </Stack.Navigator>
   );
 };
