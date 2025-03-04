@@ -46,7 +46,7 @@ interface MeetingsResponse {
   meetings: Meeting[];
   meetingsByStatus: {
     waiting: Meeting[];
-    approved: Meeting[];
+    confirmed: Meeting[];
     rejected: Meeting[];
     completed: Meeting[];
     cancelled: Meeting[];
@@ -62,7 +62,7 @@ interface HandleRequestResponse {
 }
 
 // Tab type definition
-type TabType = 'waiting' | 'approved' | 'rejected' | 'completed' | 'cancelled' | 'other';
+type TabType = 'waiting' | 'confirmed' | 'rejected' | 'completed' | 'cancelled' | 'other';
 
 // Add this interface for time slot selection
 interface SelectedTimeSlot {
@@ -78,7 +78,7 @@ export const ProMeetingsScreen = () => {
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [meetingsByStatus, setMeetingsByStatus] = useState<Record<TabType, Meeting[]>>({
     waiting: [],
-    approved: [],
+    confirmed: [],
     rejected: [],
     completed: [],
     cancelled: [],
@@ -134,7 +134,7 @@ export const ProMeetingsScreen = () => {
         if (data.meetingsByStatus) {
           setMeetingsByStatus({
             waiting: data.meetingsByStatus.waiting || [],
-            approved: data.meetingsByStatus.approved || [],
+            confirmed: data.meetingsByStatus.confirmed || [],
             rejected: data.meetingsByStatus.rejected || [],
             completed: data.meetingsByStatus.completed || [],
             cancelled: data.meetingsByStatus.cancelled || [],
@@ -149,7 +149,7 @@ export const ProMeetingsScreen = () => {
         setMeetings([]);
         setMeetingsByStatus({
           waiting: [],
-          approved: [],
+          confirmed: [],
           rejected: [],
           completed: [],
           cancelled: [],
@@ -175,7 +175,7 @@ export const ProMeetingsScreen = () => {
   const groupMeetingsByStatus = (meetingList: Meeting[]): Record<TabType, Meeting[]> => {
     const grouped: Record<TabType, Meeting[]> = {
       waiting: [],
-      approved: [],
+      confirmed: [],
       rejected: [],
       completed: [],
       cancelled: [],
@@ -186,8 +186,8 @@ export const ProMeetingsScreen = () => {
       const status = meeting.status.toLowerCase();
       if (status === 'waiting') {
         grouped.waiting.push(meeting);
-      } else if (['approved', 'approve', 'confirmed', 'accept'].includes(status)) {
-        grouped.approved.push(meeting);
+      } else if (['confirmed'].includes(status)) {
+        grouped.confirmed.push(meeting);
       } else if (['rejected', 'reject', 'declined', 'deny'].includes(status)) {
         grouped.rejected.push(meeting);
       } else if (status === 'completed') {
@@ -227,15 +227,15 @@ export const ProMeetingsScreen = () => {
   }, [userId, fetchMeetings]);
 
   // Modify handleMeetingRequest to include the selected time slot
-  const handleMeetingRequest = async (requestId: string, action: 'approve' | 'reject', timeSlot?: SelectedTimeSlot) => {
+  const handleMeetingRequest = async (requestId: string, action: 'confirm' | 'reject', timeSlot?: SelectedTimeSlot) => {
     try {
       if (!userId) {
         throw new Error('User ID not available');
       }
       
-      const actionText = action === 'approve' ? 'approve' : 'reject';
+      const actionText = action === 'confirm' ? 'confirm' : 'reject';
       
-      if (action === 'approve' && !timeSlot) {
+      if (action === 'confirm' && !timeSlot) {
         // For approvals, first show the time slot selection modal
         const meeting = meetingsByStatus.waiting.find(m => m.request_id === requestId);
         if (meeting && meeting.availability_slots && meeting.availability_slots.length > 0) {
@@ -246,9 +246,9 @@ export const ProMeetingsScreen = () => {
         }
       }
       
-      const confirmTitle = action === 'approve' ? 'Approve Request' : 'Reject Request';
-      const confirmMessage = action === 'approve' 
-        ? 'Are you sure you want to approve this client request?' 
+      const confirmTitle = action === 'confirm' ? 'Confirm Request' : 'Reject Request';
+      const confirmMessage = action === 'confirm' 
+        ? 'Are you sure you want to confirm this client request?' 
         : 'Are you sure you want to reject this client request?';
       
       // Display confirmation dialog
@@ -258,8 +258,8 @@ export const ProMeetingsScreen = () => {
         [
           { text: "Cancel", style: "cancel" },
           { 
-            text: actionText === 'approve' ? 'Approve' : 'Reject', 
-            style: actionText === 'approve' ? "default" : "destructive",
+            text: actionText === 'confirm' ? 'Confirm' : 'Reject', 
+            style: actionText === 'confirm' ? "default" : "destructive",
             onPress: async () => {
               setIsLoading(true);
               
@@ -286,7 +286,7 @@ export const ProMeetingsScreen = () => {
                 
                 // Show popup with message from backend
                 Alert.alert(
-                  action === 'approve' ? 'Request Approved' : 'Request Rejected',
+                  action === 'confirm' ? 'Request Confirmed' : 'Request Rejected',
                   data.message || `The request has been ${actionText}ed successfully.`,
                   [
                     { 
@@ -322,16 +322,16 @@ export const ProMeetingsScreen = () => {
     }
   };
 
-  const approveMeeting = (requestId: string) => {
+  const confirmMeeting = (requestId: string) => {
     // Now just initiates the time slot selection flow
-    handleMeetingRequest(requestId, 'approve');
+    handleMeetingRequest(requestId, 'confirm');
   };
 
   // New helper to confirm after selecting a time slot
   const confirmWithTimeSlot = (timeSlot: SelectedTimeSlot) => {
     if (currentRequestId && timeSlot) {
       setTimeSlotModalVisible(false);
-      handleMeetingRequest(currentRequestId, 'approve', timeSlot);
+      handleMeetingRequest(currentRequestId, 'confirm', timeSlot);
       setCurrentRequestId(null);
     }
   };
@@ -399,9 +399,9 @@ export const ProMeetingsScreen = () => {
       color: '#FF9500',
       badgeColor: '#FFF9ED',
     },
-    approved: { 
+    confirmed: { 
       icon: 'checkmark-circle', 
-      label: 'Approved', 
+      label: 'Confirmed', 
       color: '#34C759',
       badgeColor: '#F0FFF4',
     },
@@ -482,7 +482,7 @@ export const ProMeetingsScreen = () => {
             <View style={styles.detailRow}>
               <Icon name="checkmark-circle-outline" size={16} color="#34C759" style={styles.detailIcon} />
               <Text style={styles.detailText}>
-                Approved on: {format(new Date(item.confirmed_timestamp), 'MMM d, yyyy')}
+                Confirmed on: {format(new Date(item.confirmed_timestamp), 'MMM d, yyyy')}
               </Text>
             </View>
           )}
@@ -534,14 +534,14 @@ export const ProMeetingsScreen = () => {
               </LinearGradient>
             </TouchableOpacity>
             
-            {/* Approve button - changed label to "Select Time" */}
+            {/* Confirm button - changed label to "Select Time" */}
             <TouchableOpacity
-              style={styles.approveButton}
-              onPress={() => approveMeeting(item.request_id)}
+              style={styles.confirmButton}
+              onPress={() => confirmMeeting(item.request_id)}
             >
               <LinearGradient
                 colors={['#34C759', '#2EAA4F']}
-                style={styles.approveButtonGradient}
+                style={styles.confirmButtonGradient}
               >
                 <Icon name="calendar" size={20} color="#FFFFFF" />
                 <Text style={styles.actionButtonText}>Select Time</Text>
@@ -559,8 +559,8 @@ export const ProMeetingsScreen = () => {
     
     if (statusLower === 'waiting') {
       return tabConfig.waiting;
-    } else if (['approved', 'approve', 'confirmed', 'accept'].includes(statusLower)) {
-      return tabConfig.approved;
+    } else if (['confirmed'].includes(statusLower)) {
+      return tabConfig.confirmed;
     } else if (['rejected', 'reject', 'declined', 'deny'].includes(statusLower)) {
       return tabConfig.rejected;
     } else if (statusLower === 'completed') {
@@ -581,9 +581,9 @@ export const ProMeetingsScreen = () => {
         emptyMessage = 'No Pending Requests';
         emptySubMessage = 'You don\'t have any client requests requiring approval at this time.';
         break;
-      case 'approved':
-        emptyMessage = 'No Approved Meetings';
-        emptySubMessage = 'You haven\'t approved any meeting requests yet.';
+      case 'confirm':
+        emptyMessage = 'No Confirmed Meetings';
+        emptySubMessage = 'You haven\'t confirmed any meeting requests yet.';
         break;
       case 'rejected':
         emptyMessage = 'No Rejected Meetings';
@@ -1000,12 +1000,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row', 
     justifyContent: 'space-between',
   },
-  approveButton: {
+  confirmButton: {
     flex: 1,
     borderBottomRightRadius: 16,
     overflow: 'hidden',
   },
-  approveButtonGradient: {
+  confirmButtonGradient: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
