@@ -18,6 +18,7 @@ import {
   TouchableWithoutFeedback
 } from 'react-native';
 
+
 import { ScreenHeader } from '../../common/ScreenHeader';
 import Icon from '@expo/vector-icons/Ionicons';
 import { ServerEnvironment } from '../../../config/server.config';
@@ -36,23 +37,27 @@ const services = [
       {
         title: "Plumber",
         description: "Burst pipes, leaks, water heater issues, clogged drains",
+        price: "$30/15 mins + $1.5/min",
         icon: "water"
       },
       {
         title: "Electrician",
         description: "Wiring problems, breaker panel issues, lighting, appliance hookups",
+        price: "$35/15 mins + $1.8/min",
         icon: "flash"
       },
-      {
-        title: "HVAC Specialist",
-        description: "Heating, ventilation, and air conditioning repairs or inspections",
-        icon: "thermometer"
-      },
-      {
-        title: "Roofing Specialist",
-        description: "Leaks, storm damage, routine roof maintenance",
-        icon: "home"
-      }
+      // {
+      //   title: "HVAC Specialist",
+      //   description: "Heating, ventilation, and air conditioning repairs or inspections",
+      //   price: "$40/15 mins + $2.0/min",
+      //   icon: "thermometer"
+      // },
+      // {
+      //   title: "Roofing Specialist",
+      //   description: "Leaks, storm damage, routine roof maintenance",
+      //   price: "$45/15 mins + $2.2/min",
+      //   icon: "home"
+      // }
     ]
   },
   {
@@ -61,16 +66,19 @@ const services = [
       {
         title: "Maintenance Handyman",
         description: "Minor fixes, odd jobs, patching walls, simple carpentry",
+        price: "$25/15 mins + $1.2/min",
         icon: "hammer"
       },
-      {
-        title: "Property Manager",
-        description: "For landlords or multi-property owners",
-        icon: "business"
-      },
+      // {
+      //   title: "Property Manager",
+      //   description: "For landlords or multi-property owners",
+      //   price: "$35/15 mins + $1.5/min",
+      //   icon: "business"
+      // },
       {
         title: "Home Inspector",
         description: "Diagnose structural or safety concerns",
+        price: "$50/15 mins + $2.5/min",
         icon: "search"
       }
     ]
@@ -81,16 +89,19 @@ const services = [
       {
         title: "Real Estate Investor",
         description: "Advice on ROI, flipping, market opportunities",
+        price: "$55/15 mins + $2.8/min",
         icon: "trending-up"
       },
       {
         title: "First-Time Home Buying Support",
         description: "Guidance from agents, mortgage brokers, financial advisors",
+        price: "$30/15 mins + $1.5/min",
         icon: "home"
       },
       {
         title: "Airbnb Hosts/Cohosts",
         description: "Help with guest communication, turnover, pricing",
+        price: "$30/15 mins + $1.5/min",
         icon: "bed"
       }
     ]
@@ -101,16 +112,19 @@ const services = [
       {
         title: "General Contractor",
         description: "Coordinating larger remodel or renovation projects",
+        price: "$45/15 mins + $2.2/min",
         icon: "construct"
       },
-      {
-        title: "Interior Designer",
-        description: "Remodel, improve aesthetics, or sell for top dollar",
-        icon: "color-palette"
-      },
+      // {
+      //   title: "Interior Designer",
+      //   description: "Remodel, improve aesthetics, or sell for top dollar",
+      //   price: "$40/15 mins + $2.0/min",
+      //   icon: "color-palette"
+      // },
       {
         title: "Property Attorney",
         description: "Legal guidance on contracts, disputes, transactions",
+        price: "$60/15 mins + $3.0/min",
         icon: "document-text"
       }
     ]
@@ -231,6 +245,7 @@ export const CallProScreen = () => {
   const [photoOptionsVisible, setPhotoOptionsVisible] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [requestId, setRequestId] = useState<string | null>(null);
+  const [selectedServicePrice, setSelectedServicePrice] = useState<string>('');
 
   // Move calculateProgress inside component so it has access to state variables
   const calculateProgress = () => {
@@ -623,209 +638,226 @@ export const CallProScreen = () => {
   const [availableStartTimes, setAvailableStartTimes] = useState(getTimeSlots());
   const [availableEndTimes, setAvailableEndTimes] = useState(getTimeSlots());
 
-  // Update the availability picker modal content
-  const renderAvailabilityPickerModal = () => (
-    <Modal
-      visible={showAvailabilityPicker}
-      transparent={true}
-      animationType="slide"
-      onRequestClose={() => setShowAvailabilityPicker(false)}
-    >
-      <View style={styles.modalContainer}>
-        <View style={styles.availabilityModalContent}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Select Availability</Text>
-            <TouchableOpacity 
-              onPress={() => setShowAvailabilityPicker(false)}
-              style={styles.closeButton}
-            >
-              <Icon name="close" size={24} color="#555555" />
-            </TouchableOpacity>
-          </View>
-          
-          <View style={styles.availabilityPickerContainer}>
-            {/* Date Selection */}
-            <View style={styles.availabilityPickerSection}>
-              <Text style={styles.availabilityPickerLabel}>Date</Text>
-              <TouchableOpacity 
-                style={styles.datePickerButton}
-                onPress={() => {
-                  setShowDateDropdown(!showDateDropdown);
-                  setShowStartTimeDropdown(false);
-                  setShowEndTimeDropdown(false);
-                }}
-              >
-                <Icon name="calendar-outline" size={20} color="#4A90E2" />
-                <Text style={styles.datePickerText}>
-                  {format(selectedDate, 'EEE, MMM d, yyyy')}
-                </Text>
-                <Icon 
-                  name={showDateDropdown ? "chevron-up" : "chevron-down"} 
-                  size={16} 
-                  color="#666666" 
-                />
-              </TouchableOpacity>
+  // Simplified Time Slot Picker Modal
+  const renderAvailabilityPickerModal = () => {
+    // Current time state to track which time we're selecting
+    const [selectingTime, setSelectingTime] = useState<'none' | 'start' | 'end'>('none');
+    
+    // Render the time selector modal in a completely separate UI
+    const renderTimeSelector = () => {
+      const isStartTime = selectingTime === 'start';
+      const title = isStartTime ? 'Select Start Time' : 'Select End Time';
+      const times = isStartTime 
+        ? availableStartTimes 
+        : availableEndTimes.filter(time => time > selectedStartTime);
+      
+      return (
+        <Modal
+          visible={selectingTime !== 'none'}
+          transparent={true}
+          animationType="slide"
+          onRequestClose={() => setSelectingTime('none')}
+        >
+          <View style={styles.fullScreenModal}>
+            <View style={styles.timeSelectorContainer}>
+              <View style={styles.timeSelectorHeader}>
+                <Text style={styles.timeSelectorTitle}>{title}</Text>
+                <TouchableOpacity 
+                  onPress={() => setSelectingTime('none')}
+                  style={styles.closeButton}
+                >
+                  <Icon name="close" size={24} color="#333" />
+                </TouchableOpacity>
+              </View>
               
-              {showDateDropdown && (
-                <View style={styles.dropdownContainer}>
-                  <ScrollView style={styles.dateScrollView} showsVerticalScrollIndicator={false}>
-                    {availableDates.map((date, index) => (
-                      <TouchableOpacity
-                        key={index}
-                        style={[
-                          styles.dateDropdownItem,
-                          date.toDateString() === selectedDate.toDateString() && styles.selectedDateItem
-                        ]}
-                        onPress={() => {
-                          setSelectedDate(date);
-                          setShowDateDropdown(false);
-                          setAvailableStartTimes(getTimeSlots());
-                          // Reset selected times when date changes
-                          const initialStartTime = getTimeSlots()[0];
-                          setSelectedStartTime(initialStartTime);
-                          setSelectedEndTime(new Date(initialStartTime.getTime() + 30 * 60000));
-                        }}
-                      >
-                        <Text style={[
-                          styles.dateDropdownText,
-                          date.toDateString() === selectedDate.toDateString() && styles.selectedDateText
-                        ]}>
-                          {format(date, 'EEE, MMM d')}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
-                </View>
-              )}
-            </View>
-            
-            {/* Time Range Selection - Improved */}
-            <View style={styles.availabilityPickerSection}>
-              <Text style={styles.availabilityPickerLabel}>Time Range</Text>
-              
-              {/* Start Time Selection */}
-              <Text style={styles.timeSubLabel}>From:</Text>
-              <TouchableOpacity 
-                style={styles.fullWidthTimeButton}
-                onPress={() => {
-                  setShowStartTimeDropdown(!showStartTimeDropdown);
-                  setShowEndTimeDropdown(false);
-                  setShowDateDropdown(false);
-                }}
-              >
-                <Icon name="time-outline" size={20} color="#4A90E2" />
-                <Text style={styles.timePickerText}>
-                  {format(selectedStartTime, 'h:mm a')}
-                </Text>
-                <Icon 
-                  name={showStartTimeDropdown ? "chevron-up" : "chevron-down"} 
-                  size={16} 
-                  color="#666666" 
-                />
-              </TouchableOpacity>
-              
-              {showStartTimeDropdown && (
-                <View style={styles.fullWidthTimeDropdown}>
-                  <ScrollView style={styles.timeScrollView} showsVerticalScrollIndicator={true}>
-                    {availableStartTimes.map((time, index) => (
-                      <TouchableOpacity
-                        key={index}
-                        style={[
-                          styles.timeDropdownItem,
-                          time.getTime() === selectedStartTime.getTime() && styles.selectedTimeItem
-                        ]}
-                        onPress={() => {
+              <FlatList
+                data={times}
+                keyExtractor={(_, index) => index.toString()}
+                renderItem={({item: time}) => {
+                  const selected = isStartTime 
+                    ? time.getTime() === selectedStartTime.getTime()
+                    : time.getTime() === selectedEndTime.getTime();
+                  
+                  return (
+                    <TouchableOpacity
+                      style={[styles.timeOption, selected && styles.timeOptionSelected]}
+                      onPress={() => {
+                        if (isStartTime) {
                           setSelectedStartTime(time);
-                          setShowStartTimeDropdown(false);
-                          // Reset end time when start time changes
-                          const minEndTime = new Date(time.getTime() + 30 * 60000);
-                          setSelectedEndTime(minEndTime);
-                        }}
-                      >
-                        <Text style={[
-                          styles.timeDropdownText,
-                          time.getTime() === selectedStartTime.getTime() && styles.selectedTimeText
-                        ]}>
-                          {format(time, 'h:mm a')}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
-                </View>
-              )}
-              
-              {/* End Time Selection */}
-              <Text style={[styles.timeSubLabel, {marginTop: 16}]}>To:</Text>
-              <TouchableOpacity 
-                style={styles.fullWidthTimeButton}
-                onPress={() => {
-                  setShowEndTimeDropdown(!showEndTimeDropdown);
-                  setShowStartTimeDropdown(false);
-                  setShowDateDropdown(false);
+                          if (selectedEndTime <= time) {
+                            setSelectedEndTime(new Date(time.getTime() + 30 * 60000));
+                          }
+                        } else {
+                          setSelectedEndTime(time);
+                        }
+                        setSelectingTime('none');
+                      }}
+                    >
+                      <Text style={[styles.timeOptionText, selected && styles.timeOptionTextSelected]}>
+                        {format(time, 'h:mm a')}
+                      </Text>
+                      {selected && <Icon name="checkmark" size={22} color={COLORS.primary} />}
+                    </TouchableOpacity>
+                  );
                 }}
-              >
-                <Icon name="time-outline" size={20} color="#4A90E2" />
-                <Text style={styles.timePickerText}>
-                  {format(selectedEndTime, 'h:mm a')}
-                </Text>
-                <Icon 
-                  name={showEndTimeDropdown ? "chevron-up" : "chevron-down"} 
-                  size={16} 
-                  color="#666666" 
-                />
-              </TouchableOpacity>
-              
-              {showEndTimeDropdown && (
-                <View style={styles.fullWidthTimeDropdown}>
-                  <ScrollView style={styles.timeScrollView} showsVerticalScrollIndicator={true}>
-                    {availableEndTimes
-                      .filter(time => time > new Date(selectedStartTime.getTime() + 29 * 60000))
-                      .map((time, index) => (
-                        <TouchableOpacity
-                          key={index}
-                          style={[
-                            styles.timeDropdownItem,
-                            time.getTime() === selectedEndTime.getTime() && styles.selectedTimeItem
-                          ]}
-                          onPress={() => {
-                            setSelectedEndTime(time);
-                            setShowEndTimeDropdown(false);
-                          }}
-                        >
-                          <Text style={[
-                            styles.timeDropdownText,
-                            time.getTime() === selectedEndTime.getTime() && styles.selectedTimeText
-                          ]}>
-                            {format(time, 'h:mm a')}
-                          </Text>
-                        </TouchableOpacity>
-                      ))}
-                  </ScrollView>
-                </View>
-              )}
+                contentContainerStyle={styles.timeOptionsList}
+                showsVerticalScrollIndicator={true}
+              />
             </View>
           </View>
-          
-          <View style={styles.confirmButtonContainer}>
-            <TouchableOpacity 
-              style={styles.confirmAvailabilityButton}
-              onPress={() => {
-                addTimeSlot();
-                setShowAvailabilityPicker(false);
-              }}
-            >
-              <ExpoLinearGradient
-                colors={[COLORS.primary, COLORS.primaryDark]}
-                style={styles.confirmAvailabilityGradient}
-              >
-                <Text style={styles.confirmAvailabilityText}>Add Time Slot</Text>
-              </ExpoLinearGradient>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
-    </Modal>
-  );
+        </Modal>
+      );
+    };
+    
+    return (
+      <>
+        <Modal
+          visible={showAvailabilityPicker}
+          transparent={true}
+          animationType="slide"
+          onRequestClose={() => setShowAvailabilityPicker(false)}
+        >
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+            <View style={styles.modalContainer}>
+              <View style={styles.availabilityModalContent}>
+                <View style={styles.modalHeader}>
+                  <Text style={styles.modalTitle}>Add Availability</Text>
+                  <TouchableOpacity 
+                    style={styles.closeButton}
+                    onPress={() => setShowAvailabilityPicker(false)}
+                    hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
+                  >
+                    <Icon name="close" size={24} color="#555555" />
+                  </TouchableOpacity>
+                </View>
+
+                <View style={styles.simplifiedPickerContent}>
+                  {/* Date Selection - Horizontal Slider */}
+                  <View style={styles.simplifiedPickerSection}>
+                    <Text style={styles.simplifiedPickerLabel}>Select Date</Text>
+                    <ScrollView 
+                      horizontal 
+                      showsHorizontalScrollIndicator={false}
+                      style={styles.simpleDateContainer}
+                    >
+                      {availableDates.map((date, index) => {
+                        const isSelected = date.toDateString() === selectedDate.toDateString();
+                        const isToday = date.toDateString() === new Date().toDateString();
+                        return (
+                          <TouchableOpacity
+                            key={index}
+                            style={[
+                              styles.simpleDateItem,
+                              isSelected && styles.simpleDateItemSelected
+                            ]}
+                            onPress={() => {
+                              setSelectedDate(date);
+                              setAvailableStartTimes(getTimeSlots());
+                              const initialStartTime = getTimeSlots()[0];
+                              if (initialStartTime) {
+                                setSelectedStartTime(initialStartTime);
+                                setSelectedEndTime(new Date(initialStartTime.getTime() + 30 * 60000));
+                              }
+                            }}
+                          >
+                            <Text style={[styles.simpleDateDay, isSelected && styles.simpleDateTextSelected]}>
+                              {format(date, 'EEE')}
+                            </Text>
+                            <Text style={[styles.simpleDateNum, isSelected && styles.simpleDateTextSelected]}>
+                              {format(date, 'd')}
+                            </Text>
+                            {isToday && (
+                              <View style={styles.simpleTodayBadge}>
+                                <Text style={styles.simpleTodayText}>Today</Text>
+                              </View>
+                            )}
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </ScrollView>
+                  </View>
+
+                  {/* Time Selection - Enhanced UI with separate modals */}
+                  <View style={styles.simplifiedPickerSection}>
+                    <Text style={styles.simplifiedPickerLabel}>Select Time Range</Text>
+                    
+                    <View style={styles.simpleTimeSelectors}>
+                      {/* Start Time */}
+                      <TouchableOpacity 
+                        style={styles.timeSelectButton}
+                        onPress={() => setSelectingTime('start')}
+                        activeOpacity={0.7}
+                      >
+                        <View>
+                          <Text style={styles.timeSelectLabel}>From</Text>
+                          <Text style={styles.timeSelectValue}>{format(selectedStartTime, 'h:mm a')}</Text>
+                        </View>
+                        <Icon name="chevron-down" size={20} color={COLORS.textSecondary} />
+                      </TouchableOpacity>
+
+                      {/* End Time */}
+                      <TouchableOpacity
+                        style={styles.timeSelectButton}
+                        onPress={() => setSelectingTime('end')}
+                        activeOpacity={0.7}
+                      >
+                        <View>
+                          <Text style={styles.timeSelectLabel}>To</Text>
+                          <Text style={styles.timeSelectValue}>{format(selectedEndTime, 'h:mm a')}</Text>
+                        </View>
+                        <Icon name="chevron-down" size={20} color={COLORS.textSecondary} />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+
+                  {/* Summary Card */}
+                  <View style={styles.simpleSelectedSlot}>
+                    <View style={styles.simpleSelectedTop}>
+                      <Icon name="calendar-outline" size={20} color={COLORS.primary} />
+                      <Text style={styles.simpleSelectedDate}>
+                        {format(selectedDate, 'EEEE, MMMM d, yyyy')}
+                      </Text>
+                    </View>
+                    <View style={styles.simpleSelectedDetails}>
+                      <View style={styles.simpleSelectedTime}>
+                        <Icon name="time-outline" size={18} color={COLORS.primary} style={{marginRight: 8}} />
+                        <Text style={styles.simpleSelectedTimeText}>
+                          {format(selectedStartTime, 'h:mm a')} - {format(selectedEndTime, 'h:mm a')}
+                        </Text>
+                      </View>
+                      <Text style={styles.simpleSelectedDuration}>
+                        Duration: {Math.round((selectedEndTime.getTime() - selectedStartTime.getTime()) / (60 * 1000))} minutes
+                      </Text>
+                    </View>
+                  </View>
+
+                  {/* Add Button */}
+                  <TouchableOpacity 
+                    style={styles.simpleAddButton}
+                    onPress={() => {
+                      addTimeSlot();
+                      setShowAvailabilityPicker(false);
+                    }}
+                  >
+                    <ExpoLinearGradient
+                      colors={[COLORS.primary, COLORS.primaryDark]}
+                      style={styles.simpleAddButtonGradient}
+                    >
+                      <Icon name="add" size={20} color="#FFFFFF" style={{marginRight: 8}} />
+                      <Text style={styles.simpleAddButtonText}>Add This Time Slot</Text>
+                    </ExpoLinearGradient>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </TouchableWithoutFeedback>
+        </Modal>
+        
+        {/* Separate Time Selector Modal */}
+        {renderTimeSelector()}
+      </>
+    );
+  };
 
   // Update the service selection section to ensure it's properly displayed
   const renderServiceSelection = () => {
@@ -835,7 +867,7 @@ export const CallProScreen = () => {
       <View style={styles.serviceSelectionContainer}>
         <SafeAreaView style={styles.serviceSelectionSafeArea}>
           <View style={styles.serviceSelectionHeader}>
-            <Text style={styles.serviceSelectionTitle}>Select a Service</Text>
+            {/* <Text style={styles.serviceSelectionTitle}>Select a Service</Text> */}
             <TouchableOpacity 
               onPress={() => setShowServiceSelection(false)}
               style={styles.closeButton}
@@ -844,128 +876,46 @@ export const CallProScreen = () => {
             </TouchableOpacity>
           </View>
           
-          <ScrollView style={styles.serviceList}>
-            <View style={styles.serviceCategory}>
-              <Text style={styles.categoryTitle}>Emergency & Repairs</Text>
-              
-              <TouchableOpacity 
-                style={styles.serviceCard} 
-                onPress={() => selectService('Plumber')}
-              >
-                <View style={[styles.serviceIconContainer, { backgroundColor: COLORS.primary }]}>
-                  <Icon name="water-outline" size={24} color="#FFFFFF" />
-                </View>
-                <View style={styles.serviceTextContainer}>
-                  <Text style={styles.serviceTitle}>Plumber</Text>
-                  <Text style={styles.serviceDescription}>
-                    Burst pipes, leaks, water heater issues, clogged drains
-                  </Text>
-                </View>
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={styles.serviceCard} 
-                onPress={() => selectService('Electrician')}
-              >
-                <View style={[styles.serviceIconContainer, { backgroundColor: COLORS.primary }]}>
-                  <Icon name="flash-outline" size={24} color="#FFFFFF" />
-                </View>
-                <View style={styles.serviceTextContainer}>
-                  <Text style={styles.serviceTitle}>Electrician</Text>
-                  <Text style={styles.serviceDescription}>
-                    Wiring problems, breaker panel issues, lighting, appliance hookups
-                  </Text>
-                </View>
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={styles.serviceCard} 
-                onPress={() => selectService('HVAC Specialist')}
-              >
-                <View style={[styles.serviceIconContainer, { backgroundColor: COLORS.primary }]}>
-                  <Icon name="thermometer-outline" size={24} color="#FFFFFF" />
-                </View>
-                <View style={styles.serviceTextContainer}>
-                  <Text style={styles.serviceTitle}>HVAC Specialist</Text>
-                  <Text style={styles.serviceDescription}>
-                    Heating, ventilation, and air conditioning repairs or inspections
-                  </Text>
-                </View>
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={styles.serviceCard} 
-                onPress={() => selectService('Roofing Specialist')}
-              >
-                <View style={[styles.serviceIconContainer, { backgroundColor: COLORS.primary }]}>
-                  <Icon name="home-outline" size={24} color="#FFFFFF" />
-                </View>
-                <View style={styles.serviceTextContainer}>
-                  <Text style={styles.serviceTitle}>Roofing Specialist</Text>
-                  <Text style={styles.serviceDescription}>
-                    Leaks, storm damage, routine roof maintenance
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            </View>
-            
-            <View style={styles.serviceCategory}>
-              <Text style={styles.categoryTitle}>Property Management & Support</Text>
-              
-              <TouchableOpacity 
-                style={styles.serviceCard} 
-                onPress={() => selectService('Maintenance Handyman')}
-              >
-                <View style={[styles.serviceIconContainer, { backgroundColor: COLORS.primary }]}>
-                  <Icon name="hammer-outline" size={24} color="#FFFFFF" />
-                </View>
-                <View style={styles.serviceTextContainer}>
-                  <Text style={styles.serviceTitle}>Maintenance Handyman</Text>
-                  <Text style={styles.serviceDescription}>
-                    Minor fixes, odd jobs, patching walls, simple carpentry
-                  </Text>
-                </View>
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={styles.serviceCard} 
-                onPress={() => selectService('Property Manager')}
-              >
-                <View style={[styles.serviceIconContainer, { backgroundColor: COLORS.primary }]}>
-                  <Icon name="business-outline" size={24} color="#FFFFFF" />
-                </View>
-                <View style={styles.serviceTextContainer}>
-                  <Text style={styles.serviceTitle}>Property Manager</Text>
-                  <Text style={styles.serviceDescription}>
-                    For landlords or multi-property owners
-                  </Text>
-                </View>
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={styles.serviceCard} 
-                onPress={() => selectService('Home Inspector')}
-              >
-                <View style={[styles.serviceIconContainer, { backgroundColor: COLORS.primary }]}>
-                  <Icon name="search-outline" size={24} color="#FFFFFF" />
-                </View>
-                <View style={styles.serviceTextContainer}>
-                  <Text style={styles.serviceTitle}>Home Inspector</Text>
-                  <Text style={styles.serviceDescription}>
-                    Diagnose structural or safety concerns
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            </View>
-          </ScrollView>
+          <FlatList
+            data={services}
+            keyExtractor={(item, index) => `category-${index}`}
+            renderItem={({item: serviceCategory, index: categoryIndex}) => (
+              <View style={styles.serviceCategory}>
+                <Text style={styles.categoryTitle}>{serviceCategory.category}</Text>
+                
+                {serviceCategory.items.map((service, serviceIndex) => (
+                  <TouchableOpacity 
+                    key={`service-${categoryIndex}-${serviceIndex}`}
+                    style={styles.serviceCard} 
+                    onPress={() => selectService(service.title, service.price)}
+                  >
+                    <View style={[styles.serviceIconContainer, { backgroundColor: COLORS.primary }]}>
+                      <Icon name={service.icon} size={24} color="#FFFFFF" />
+                    </View>
+                    <View style={styles.serviceTextContainer}>
+                      <Text style={styles.serviceTitle}>{service.title}</Text>
+                      <Text style={styles.serviceDescription}>{service.description}</Text>
+                      <View style={styles.servicePriceContainer}>
+                        <Icon name="pricetag-outline" size={14} color={COLORS.primary} />
+                        <Text style={styles.servicePriceText}>{service.price}</Text>
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+            contentContainerStyle={styles.serviceListContentContainer}
+            showsVerticalScrollIndicator={true}
+          />
         </SafeAreaView>
       </View>
     );
   };
 
   // Add this function to handle service selection
-  const selectService = (serviceName: string) => {
+  const selectService = (serviceName: string, servicePrice: string) => {
     setSelectedService(serviceName);
+    setSelectedServicePrice(servicePrice);
     setShowServiceSelection(false);
     
     // You might want to add additional logic here based on the selected service
@@ -1100,9 +1050,35 @@ export const CallProScreen = () => {
           
           <Text style={styles.confirmationTitle}>Request Submitted!</Text>
           
+          <View style={styles.confirmationSummary}>
+            <View style={styles.confirmationRow}>
+              <Text style={styles.confirmationLabel}>Service:</Text>
+              <Text style={styles.confirmationValue}>{selectedService}</Text>
+            </View>
+            
+            <View style={styles.confirmationRow}>
+              <Text style={styles.confirmationLabel}>Pricing:</Text>
+              <Text style={styles.confirmationPriceValue}>{selectedServicePrice}</Text>
+            </View>
+            
+            <View style={styles.confirmationRow}>
+              <Text style={styles.confirmationLabel}>Location:</Text>
+              <Text style={styles.confirmationValue}>{city}, {stateCode}</Text>
+            </View>
+            
+            {timeSlots.length > 0 && (
+              <View style={styles.confirmationRow}>
+                <Text style={styles.confirmationLabel}>Time:</Text>
+                <Text style={styles.confirmationValue}>
+                  {format(timeSlots[0].date, 'EEE, MMM d')} at {format(timeSlots[0].startTime, 'h:mm a')}
+                </Text>
+              </View>
+            )}
+          </View>
+          
           <Text style={styles.confirmationText}>
             Your request has been sent to matching professionals in your area. 
-            You'll receive a notification once a professional accepts your request.
+            You'll receive a notification once a professional confirms your request.
           </Text>
           
           {requestId && (
@@ -1216,7 +1192,13 @@ export const CallProScreen = () => {
                 onPress={() => setShowServiceSelection(true)}
               >
                 {selectedService ? (
-                  <Text style={styles.serviceTypeText}>{selectedService}</Text>
+                  <View style={styles.selectedServiceInfo}>
+                    <Text style={styles.serviceTypeText}>{selectedService}</Text>
+                    <View style={styles.selectedServicePriceContainer}>
+                      <Icon name="pricetag-outline" size={14} color={COLORS.primary} style={styles.selectedServicePriceIcon} />
+                      <Text style={styles.selectedServicePriceText}>{selectedServicePrice}</Text>
+                    </View>
+                  </View>
                 ) : (
                   <View style={styles.placeholderContent}>
                     <Icon name="search" size={18} color={COLORS.placeholder} />
@@ -1576,6 +1558,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.textSecondary,
     textAlign: 'center',
+  },
+
+  // Service list - padding bottom
+  serviceListContentContainer: {
+    paddingBottom: 150
   },
   
   // Card styles
@@ -1976,7 +1963,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F7FA',
   },
   
-  // ... keep other existing modal and dropdown styles ...
   modalSafeArea: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
@@ -2315,8 +2301,9 @@ const styles = StyleSheet.create({
   },
   primaryButtonText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
+    textAlign: 'center',
   },
   secondaryButton: {
     flex: 1,
@@ -2332,5 +2319,340 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     fontSize: 16,
     fontWeight: '600',
+    textAlign: 'center',
   },
+  
+  // New styles for simplified time slot picker
+  simplifiedPickerContent: {
+    padding: 16,
+  },
+  simplifiedPickerSection: {
+    marginBottom: 24,
+  },
+  simplifiedPickerLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.text,
+    marginBottom: 12,
+  },
+  
+  // Date slider styles
+  simpleDateContainer: {
+    flexGrow: 0,
+    marginBottom: 8,
+  },
+  simpleDateItem: {
+    width: 65,
+    height: 80,
+    marginRight: 10,
+    borderRadius: 12,
+    backgroundColor: '#F5F7FA',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    padding: 8,
+  },
+  simpleDateItemSelected: {
+    backgroundColor: `${COLORS.primary}15`,
+    borderColor: COLORS.primary,
+  },
+  simpleDateDay: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: COLORS.textSecondary,
+    marginBottom: 4,
+  },
+  simpleDateNum: {
+    fontSize: 22,
+    fontWeight: '600',
+    color: COLORS.text,
+  },
+  simpleDateTextSelected: {
+    color: COLORS.primary,
+  },
+  simpleTodayBadge: {
+    backgroundColor: COLORS.accent,
+    paddingHorizontal: 4,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  simpleTodayText: {
+    color: '#FFFFFF',
+    fontSize: 8,
+    fontWeight: '700',
+  },
+  
+  // Time selector styles
+  simpleTimeSelectors: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 16,
+  },
+  simpleTimeContainer: {
+    flex: 1,
+    position: 'relative',
+  },
+  simpleTimeLabel: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    marginBottom: 8,
+  },
+  simpleTimeSelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#F5F7FA',
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 10,
+    padding: 12,
+  },
+  simpleTimeText: {
+    fontSize: 15,
+    color: COLORS.text,
+  },
+  simpleDropdown: {
+    position: 'absolute',
+    top: 78,
+    left: 0,
+    right: 0,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    zIndex: 9999,
+    elevation: 1000,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 1,
+    shadowRadius: 8,
+  },
+  simpleDropdownItem: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: COLORS.border,
+  },
+  simpleDropdownText: {
+    fontSize: 15,
+    color: COLORS.text,
+  },
+  simpleDropdownTextSelected: {
+    color: COLORS.primary,
+    fontWeight: '600',
+  },
+
+  // Selected time slot summary styles
+  simpleSelectedSlot: {
+    backgroundColor: `${COLORS.primary}10`,
+    borderWidth: 1,
+    borderColor: `${COLORS.primary}30`,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 30,
+  },
+  simpleSelectedTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  simpleSelectedDate: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.primary,
+    marginLeft: 8,
+  },
+  simpleSelectedDetails: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    padding: 12,
+  },
+  simpleSelectedTime: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  simpleSelectedTimeText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: COLORS.text,
+  },
+  simpleSelectedDuration: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    marginLeft: 26,
+  },
+  
+  simpleAddButton: {
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginTop: 8,
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  simpleAddButtonGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+  },
+  simpleAddButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  
+  // New styles for improved time selector
+  fullScreenModal: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  timeSelectorContainer: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    width: '90%',
+    maxHeight: '80%',
+    padding: 0,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 24,
+    elevation: 16,
+  },
+  timeSelectorHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  timeSelectorTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: COLORS.text,
+  },
+  timeOptionsList: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  timeOption: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  timeOptionSelected: {
+    backgroundColor: `${COLORS.primary}10`,
+  },
+  timeOptionText: {
+    fontSize: 17,
+    color: COLORS.text,
+  },
+  timeOptionTextSelected: {
+    color: COLORS.primary,
+    fontWeight: '600',
+  },
+  
+  // Time selection buttons
+  timeSelectButton: {
+    flex: 1,
+    height: 80,
+    backgroundColor: '#F5F7FA',
+    borderRadius: 12,
+    padding: 16,
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    marginHorizontal: 6,
+  },
+  timeSelectLabel: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    marginBottom: 8,
+  },
+  timeSelectValue: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: COLORS.primary,
+  },
+  simpleTimeSelectors: {
+    flexDirection: 'row',
+    marginHorizontal: -6,
+  },
+  
+  // ...existing styles...
+  servicePriceContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+    paddingTop: 4,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: COLORS.border,
+  },
+  servicePriceText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: COLORS.primary,
+    marginLeft: 4,
+  },
+  selectedServiceInfo: {
+    flex: 1,
+  },
+  selectedServicePriceContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  selectedServicePriceIcon: {
+    marginRight: 4,
+  },
+  selectedServicePriceText: {
+    fontSize: 12,
+    color: COLORS.primary,
+    fontWeight: '500',
+  },
+  
+  // Styles for the confirmation summary
+  confirmationSummary: {
+    width: '100%',
+    backgroundColor: '#F8F9FA',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+  },
+  confirmationRow: {
+    flexDirection: 'row',
+    marginBottom: 8,
+    alignItems: 'flex-start',
+  },
+  confirmationLabel: {
+    width: 70,
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+  },
+  confirmationValue: {
+    flex: 1,
+    fontSize: 14,
+    color: COLORS.text,
+    fontWeight: '500',
+  },
+  confirmationPriceValue: {
+    flex: 1,
+    fontSize: 14,
+    color: COLORS.primary,
+    fontWeight: '600',
+  },
+  
+  // ...existing styles...
 });

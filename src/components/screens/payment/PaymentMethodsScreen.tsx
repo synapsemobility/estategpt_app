@@ -435,11 +435,11 @@ const styles = StyleSheet.create({
   },
   defaultBadge: {
     position: 'absolute',
-    top: 0,
+    top: 140,
     right: 0,
     backgroundColor: 'rgba(255, 255, 255, 0.25)',
     paddingHorizontal: 10,
-    paddingVertical: 5,
+    paddingVertical: 10,
     borderBottomLeftRadius: 10,
   },
   defaultBadgeText: {

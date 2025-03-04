@@ -11,7 +11,8 @@ import {
   Alert,
   Image,
   ScrollView,
-  Modal
+  Modal,
+  Dimensions
 } from 'react-native';
 import { ScreenHeader } from '../../common/ScreenHeader';
 import Icon from '@expo/vector-icons/Ionicons';
@@ -70,6 +71,8 @@ interface SelectedTimeSlot {
   startTime: string;
   endTime: string;
 }
+
+const { width } = Dimensions.get('window');
 
 export const ProMeetingsScreen = () => {
   const navigation = useNavigation();
@@ -447,6 +450,9 @@ export const ProMeetingsScreen = () => {
     // Location string
     const location = item.city && item.state ? `${item.city}, ${item.state}` : 'Location not specified';
     
+    // Check if this is a confirmed meeting
+    const isConfirmed = item.status.toLowerCase() === 'confirmed';
+
     return (
       <View style={styles.meetingCard}>
         <View style={[styles.meetingHeader, { backgroundColor: statusConfig.badgeColor }]}>
@@ -517,7 +523,7 @@ export const ProMeetingsScreen = () => {
           )}
         </View>
         
-        {/* Action buttons container - only show for waiting requests */}
+        {/* Action buttons container - update to handle both waiting and confirmed */}
         {item.status.toLowerCase() === 'waiting' && (
           <View style={styles.actionButtonsContainer}>
             {/* Reject button */}
@@ -549,7 +555,66 @@ export const ProMeetingsScreen = () => {
             </TouchableOpacity>
           </View>
         )}
+        
+        {/* Add Join Call button for confirmed meetings */}
+        {isConfirmed && (
+          <View style={styles.actionButtonsContainer}>
+            <TouchableOpacity
+              style={styles.viewDetailsButton}
+              onPress={() => viewMeetingDetails(item)}
+            >
+              <LinearGradient
+                colors={['#6C757D', '#495057']}
+                style={styles.viewDetailsButtonGradient}
+              >
+                <Icon name="document-text" size={20} color="#FFFFFF" />
+                <Text style={styles.actionButtonText}>Details</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={styles.joinCallButton}
+              onPress={() => joinVideoCall(item)}
+            >
+              <LinearGradient
+                colors={['#007AFF', '#0063CC']}
+                style={styles.joinCallButtonGradient}
+              >
+                <Icon name="videocam" size={20} color="#FFFFFF" />
+                <Text style={styles.actionButtonText}>Join Call</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
+    );
+  };
+
+  // Add the new functions to handle video calls and meeting details
+  const joinVideoCall = (meeting: Meeting) => {
+    if (!meeting.request_id) {
+      Alert.alert('Error', 'Cannot join call. Meeting ID is missing.');
+      return;
+    }
+  
+    // Generate a room name using the request_id
+    const roomName = `meeting-${meeting.request_id}`;
+  
+    // Navigate to the VideoCall screen with the meeting details
+    navigation.navigate('VideoCall', {
+      meetingId: meeting.request_id,
+      roomName: roomName,
+      // Use client_user_id to identify the client, or fallback to "Client" if not available
+      professionalName: 'Professional' // You are the professional
+    });
+  };
+  
+  const viewMeetingDetails = (meeting: Meeting) => {
+    // Show meeting details in a modal or navigate to details screen
+    Alert.alert(
+      'Meeting Details',
+      `Service: ${meeting.service_type}\nLocation: ${meeting.city}, ${meeting.state}\nDescription: ${meeting.description}`,
+      [{ text: "OK" }]
     );
   };
 
@@ -615,45 +680,51 @@ export const ProMeetingsScreen = () => {
 
   // Tab rendering
   const renderTabs = () => (
-    <ScrollView 
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      style={styles.tabsContainer}
-      contentContainerStyle={styles.tabsContentContainer}
-    >
-      {(Object.keys(tabConfig) as TabType[]).map((tab) => {
-        const isActive = activeTab === tab;
-        const count = meetingsByStatus[tab]?.length || 0;
-        
-        return (
-          <TouchableOpacity
-            key={tab}
-            style={[styles.tab, isActive && styles.activeTab]}
-            onPress={() => setActiveTab(tab)}
-          >
-            <Icon 
-              name={tabConfig[tab].icon} 
-              size={18} 
-              color={isActive ? tabConfig[tab].color : '#8E8E93'} 
-            />
-            <Text style={[
-              styles.tabText,
-              isActive && { color: tabConfig[tab].color, fontWeight: '600' }
-            ]}>
-              {tabConfig[tab].label}
-            </Text>
-            {count > 0 && (
-              <View style={[
-                styles.tabBadge, 
-                { backgroundColor: tabConfig[tab].color }
+    <View style={styles.tabsWrapper}>
+      <ScrollView 
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.tabsContainer}
+        contentContainerStyle={styles.tabsContentContainer}
+      >
+        {(Object.keys(tabConfig) as TabType[]).map((tab) => {
+          const isActive = activeTab === tab;
+          const count = meetingsByStatus[tab]?.length || 0;
+          
+          return (
+            <TouchableOpacity
+              key={tab}
+              style={[
+                styles.tab,
+                isActive && styles.activeTab
+              ]}
+              onPress={() => setActiveTab(tab)}
+            >
+              <Icon 
+                name={tabConfig[tab].icon} 
+                size={14}  // Reduced icon size
+                color={isActive ? tabConfig[tab].color : '#8E8E93'} 
+                style={styles.tabIcon}
+              />
+              <Text style={[
+                styles.tabText,
+                isActive && { color: tabConfig[tab].color, fontWeight: '600' }
               ]}>
-                <Text style={styles.tabBadgeText}>{count}</Text>
-              </View>
-            )}
-          </TouchableOpacity>
-        );
-      })}
-    </ScrollView>
+                {tabConfig[tab].label}
+              </Text>
+              {count > 0 && (
+                <View style={[
+                  styles.tabBadge, 
+                  { backgroundColor: isActive ? tabConfig[tab].color : '#8E8E93' }
+                ]}>
+                  <Text style={styles.tabBadgeText}>{count}</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
+    </View>
   );
 
   // New time slot selection modal
@@ -803,7 +874,7 @@ export const ProMeetingsScreen = () => {
           <Text style={styles.loadingText}>Loading meetings...</Text>
         </View>
       ) : (
-        <>
+        <View style={styles.container}>
           {renderTabs()}
           <FlatList
             data={meetingsByStatus[activeTab] || []}
@@ -823,7 +894,7 @@ export const ProMeetingsScreen = () => {
             }
             ListEmptyComponent={renderEmptyList}
           />
-        </>
+        </View>
       )}
       
       {/* Render the modals */}
@@ -861,46 +932,56 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#555555',
   },
-  tabsContainer: {
+  tabsWrapper: {
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
     borderBottomColor: '#E1E8ED',
+    height: 38, // Fixed height
+  },
+  tabsContainer: {
+    height: 38, // Match height of wrapper
   },
   tabsContentContainer: {
-    paddingHorizontal: 8,
+    paddingHorizontal: 2,
+    height: 38, // Match height of container
   },
   tab: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    marginHorizontal: 4,
-    borderRadius: 20,
+    height: 28,  // Reduced height for tab
+    paddingVertical: 2,  // Reduced vertical padding
+    paddingHorizontal: 10,  // Reduced horizontal padding
+    marginHorizontal: 3,  // Reduced margin
+    marginVertical: 5,  // Center vertically in container
+    borderRadius: 14,  // Half of height for rounded appearance
   },
   activeTab: {
     backgroundColor: '#F6F8FA',
   },
+  tabIcon: {
+    marginRight: 4,  // Reduced spacing
+  },
   tabText: {
-    fontSize: 14,
+    fontSize: 16,  // Reduced font size
     color: '#8E8E93',
-    marginLeft: 6,
   },
   tabBadge: {
-    minWidth: 20,
-    height: 20,
-    borderRadius: 10,
+    minWidth: 16,  // Smaller badge
+    height: 16,  // Smaller badge
+    borderRadius: 8, // Half of height
     alignItems: 'center',
     justifyContent: 'center',
-    marginLeft: 6,
-    paddingHorizontal: 4,
+    marginLeft: 4,  // Reduced margin
+    paddingHorizontal: 3,
   },
   tabBadgeText: {
     color: '#FFFFFF',
-    fontSize: 12,
+    fontSize: 9,  // Smaller text in badge
     fontWeight: '600',
   },
   listContent: {
     padding: 16,
+    paddingTop: 8, // Reduced top padding
     paddingBottom: 32,
     flexGrow: 1,
   },
@@ -1198,5 +1279,30 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: COLORS.primary,
+  },
+  // New buttons for confirmed meetings
+  viewDetailsButton: {
+    flex: 1,
+    borderBottomLeftRadius: 16,
+    overflow: 'hidden',
+    borderRightWidth: 1,
+    borderRightColor: '#FFFFFF',
+  },
+  viewDetailsButtonGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+  },
+  joinCallButton: {
+    flex: 1,
+    borderBottomRightRadius: 16,
+    overflow: 'hidden',
+  },
+  joinCallButtonGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
   },
 });

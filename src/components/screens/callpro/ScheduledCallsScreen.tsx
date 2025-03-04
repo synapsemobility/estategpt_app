@@ -413,19 +413,12 @@ export const ScheduledCallsScreen = () => {
           </View>
           
           <View style={styles.cardActions}>
-            <TouchableOpacity 
-              style={[styles.actionButton, styles.detailsButton]}
-              onPress={() => {/* Navigate to details if needed */}}
-            >
-              <Icon name="information-circle-outline" size={18} color="#555" />
-              <Text style={styles.detailsButtonText}>Details</Text>
-            </TouchableOpacity>
-            
             <TouchableOpacity
               style={[
                 styles.actionButton,
                 styles.videoCallButton,
-                !isConfirmed && styles.disabledButton
+                !isConfirmed && styles.disabledButton,
+                { flex: 1 } // Make button take up full width
               ]}
               onPress={() => startVideoCall(item.meeting)}
               disabled={!isConfirmed}
@@ -435,7 +428,7 @@ export const ScheduledCallsScreen = () => {
                 styles.videoCallText,
                 !isConfirmed && styles.disabledText
               ]}>
-                {isConfirmed ? "Join Call" : "Unavailable"}
+                {isConfirmed ? "Join Call" : "Call Unavailable"}
               </Text>
             </TouchableOpacity>
           </View>
@@ -466,9 +459,6 @@ export const ScheduledCallsScreen = () => {
           <Text style={styles.sectionHeaderText}>{title}</Text>
         </View>
         <View style={styles.sectionHeaderRight}>
-          <Text style={styles.sectionMeetingCount}>
-            {sections[title]?.length || 0} {sections[title]?.length === 1 ? 'meeting' : 'meetings'}
-          </Text>
           <Icon 
             name={expandedSections[title] ? 'chevron-up' : 'chevron-down'} 
             size={20} 
@@ -583,11 +573,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  sectionMeetingCount: {
-    fontSize: 14,
-    color: '#666',
-    marginRight: 8,
-  },
   sectionHeaderText: {
     fontSize: 16,
     fontWeight: '700',
@@ -685,7 +670,7 @@ const styles = StyleSheet.create({
   },
   cardActions: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center', // Center the button
     paddingHorizontal: 16,
     paddingBottom: 16,
     paddingTop: 8,
@@ -693,25 +678,13 @@ const styles = StyleSheet.create({
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: 12, // Increased padding for better touch area
     paddingHorizontal: 16,
     borderRadius: 20,
     justifyContent: 'center',
   },
-  detailsButton: {
-    backgroundColor: '#f0f0f0',
-    flex: 1,
-    marginRight: 8,
-  },
-  detailsButtonText: {
-    color: '#555',
-    marginLeft: 6,
-    fontWeight: '500',
-    fontSize: 14,
-  },
   videoCallButton: {
     backgroundColor: '#007AFF',
-    flex: 2,
   },
   disabledButton: {
     backgroundColor: '#E0E0E0',

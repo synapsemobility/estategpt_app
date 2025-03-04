@@ -12,7 +12,6 @@ const baseMenuItems: MenuItem[] = [
     title: 'Scheduled Calls', 
     icon: 'calendar', 
     route: 'ScheduledCalls',
-    color: '#4169E1' // Blue color for consistency
   },
   { title: 'About Us', icon: 'information-circle', route: 'AboutUs' },
   { title: 'Submit Feedback', icon: 'chatbubble', route: 'Feedback' },
@@ -43,16 +42,14 @@ export const getMenuItems = (isProfessional: boolean): MenuItem[] => {
     // Insert Professional items
     items.splice(2, 0, 
       { 
-        title: 'Professional Profile', 
+        title: 'Pro Profile', 
         icon: 'briefcase', 
         route: 'ProProfile',
-        color: '#007AFF' // Blue color
       },
       {
         title: 'Client Requests', 
         icon: 'people', 
         route: 'ProMeetings',
-        color: '#FF9500' // Orange color
       }
     );
   } else {
@@ -61,7 +58,6 @@ export const getMenuItems = (isProfessional: boolean): MenuItem[] => {
       title: 'Become a Pro',
       icon: 'business',
       route: 'BecomePro',
-      color: '#5856D6' // Purple color
     });
   }
   
