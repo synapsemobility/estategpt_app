@@ -203,8 +203,8 @@ interface TimeSlot {
 
 // Define a more refined color theme for a premium feel
 const COLORS = {
-  primary: '#2E5C8D',       // Deep blue for primary actions
-  primaryDark: '#1E3F66',   // Darker blue for gradients
+  primary: '#444444',       // Deep blue for primary actions
+  primaryDark: '#222222',   // Darker blue for gradients
   primaryLight: '#4A7DB3',  // Lighter blue for some elements
   accent: '#FF9500',        // Orange accent for important elements
   background: '#F7F8FA',    // Light background
@@ -243,8 +243,6 @@ export const CallProScreen = () => {
   const [photos, setPhotos] = useState<Array<{uri: string}>>([]);
   const [statePickerVisible, setStatePickerVisible] = useState(false);
   const [photoOptionsVisible, setPhotoOptionsVisible] = useState(false);
-  const [showConfirmation, setShowConfirmation] = useState(false);
-  const [requestId, setRequestId] = useState<string | null>(null);
   const [selectedServicePrice, setSelectedServicePrice] = useState<string>('');
 
   // Move calculateProgress inside component so it has access to state variables
@@ -268,88 +266,22 @@ export const CallProScreen = () => {
       return;
     }
     
-    setIsLoading(true);
-    
-    try {
-      // Get the current user for authorization
-      const user = await getCurrentUser();
-      
-      const formData = new FormData();
-      
-      // Create the request data structure
-      const requestData = {
-        request_details: {
-          service_type: selectedService,
-          description: concern,
-          city: city,
-          state: stateCode,
-          availability_slots: timeSlots.map(slot => ({
-            date: slot.date.toISOString(),
-            startTime: slot.startTime.toISOString(),
-            endTime: slot.endTime.toISOString()
-          }))
-        }
-      };
-      
-      // Add data to formData
-      formData.append('data', JSON.stringify(requestData));
-      
-      // Process and add image if available
-      if (image) {
-        try {
-          const processedImageUri = await processImage(image);
-          
-          // Get file extension and mime type
-          const mimeType = image.endsWith('png') ? 'image/png' : 'image/jpeg';
-          const extension = mimeType === 'image/png' ? 'png' : 'jpg';
-          
-          formData.append('image', {
-            uri: processedImageUri,
-            type: mimeType,
-            name: `photo.${extension}`,
-          } as any);
-          
-        } catch (imageError) {
-          console.error('Error processing image:', imageError);
-          // Continue without the image
-        }
+    // Navigate to the confirmation screen with all request details
+    navigation.navigate('CallProConfirmation', {
+      requestDetails: {
+        service_type: selectedService,
+        description: concern,
+        city: city,
+        state: stateCode,
+        availability: timeSlots.map(slot => ({
+          date: slot.date.toISOString(),
+          startTime: slot.startTime.toISOString(),
+          endTime: slot.endTime.toISOString()
+        })),
+        image: image,
+        servicePrice: selectedServicePrice
       }
-      
-      // Make API request to schedule endpoint
-      const response = await fetch(ServerEnvironment.scheduleProEndpoint, {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'multipart/form-data',
-          'Authorization': user.userId, // Add authorization header
-        },
-        body: formData,
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      // Parse response
-      const responseData = await response.json();
-      
-      if (responseData.status === 'success') {
-        // Store request ID and show confirmation modal
-        setRequestId(responseData.request_id);
-        setShowConfirmation(true);
-      } else {
-        throw new Error(responseData.message || 'Unknown error occurred');
-      }
-      
-    } catch (error) {
-      console.error('Error submitting request:', error);
-      Alert.alert(
-        "Error",
-        "There was a problem submitting your request. Please try again."
-      );
-    } finally {
-      setIsLoading(false);
-    }
+    });
   };
 
   const processImage = async (imageUri: string) => {
@@ -1026,92 +958,6 @@ export const CallProScreen = () => {
     );
   };
 
-  const handleViewScheduledCalls = () => {
-    setShowConfirmation(false);
-    navigation.navigate('ScheduledCalls');
-  };
-
-  const handleGoToHome = () => {
-    setShowConfirmation(false);
-    navigation.navigate('Chat');
-  };
-
-  const renderConfirmationModal = () => (
-    <Modal
-      visible={showConfirmation}
-      transparent={true}
-      animationType="fade"
-    >
-      <View style={styles.confirmationOverlay}>
-        <View style={styles.confirmationContent}>
-          <View style={styles.successIconContainer}>
-            <Icon name="checkmark-circle" size={64} color={COLORS.success} />
-          </View>
-          
-          <Text style={styles.confirmationTitle}>Request Submitted!</Text>
-          
-          <View style={styles.confirmationSummary}>
-            <View style={styles.confirmationRow}>
-              <Text style={styles.confirmationLabel}>Service:</Text>
-              <Text style={styles.confirmationValue}>{selectedService}</Text>
-            </View>
-            
-            <View style={styles.confirmationRow}>
-              <Text style={styles.confirmationLabel}>Pricing:</Text>
-              <Text style={styles.confirmationPriceValue}>{selectedServicePrice}</Text>
-            </View>
-            
-            <View style={styles.confirmationRow}>
-              <Text style={styles.confirmationLabel}>Location:</Text>
-              <Text style={styles.confirmationValue}>{city}, {stateCode}</Text>
-            </View>
-            
-            {timeSlots.length > 0 && (
-              <View style={styles.confirmationRow}>
-                <Text style={styles.confirmationLabel}>Time:</Text>
-                <Text style={styles.confirmationValue}>
-                  {format(timeSlots[0].date, 'EEE, MMM d')} at {format(timeSlots[0].startTime, 'h:mm a')}
-                </Text>
-              </View>
-            )}
-          </View>
-          
-          <Text style={styles.confirmationText}>
-            Your request has been sent to matching professionals in your area. 
-            You'll receive a notification once a professional confirms your request.
-          </Text>
-          
-          {requestId && (
-            <Text style={styles.requestIdText}>
-              Request ID: {requestId}
-            </Text>
-          )}
-          
-          <View style={styles.confirmationButtons}>
-            <TouchableOpacity
-              style={styles.secondaryButton}
-              onPress={handleGoToHome}
-            >
-              <Text style={styles.secondaryButtonText}>Home</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity 
-              style={styles.primaryButton}
-              onPress={handleViewScheduledCalls}
-            >
-              <ExpoLinearGradient
-                colors={[COLORS.primary, COLORS.primaryDark]}
-                style={styles.primaryButtonGradient}
-              >
-                <Text style={styles.primaryButtonText}>View Scheduled Calls</Text>
-              </ExpoLinearGradient>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
-    </Modal>
-  );
-
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScreenHeader 
@@ -1492,7 +1338,6 @@ export const CallProScreen = () => {
       {/* ...existing modals... */}
       {renderStatePicker()}
       {renderPhotoOptions()}
-      {renderConfirmationModal()}
     </SafeAreaView>
   );
 };

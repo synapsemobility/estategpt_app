@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -18,6 +18,7 @@ import { LinearGradient as ExpoLinearGradient } from 'expo-linear-gradient';
 import { ServerEnvironment } from '../../../config/server.config';
 import { getCurrentUser } from '@aws-amplify/auth';
 import * as ImageManipulator from 'expo-image-manipulator';
+import { PaymentCardSelector } from '../../payment/PaymentCardSelector';
 
 // Define types for route parameters
 type CallProConfirmationRouteParams = {
@@ -33,14 +34,15 @@ type CallProConfirmationRouteParams = {
         endTime: string;
       }>;
       image: string | null;
+      servicePrice: string;
     };
   };
 };
 
 // Define consistent colors to match app theme
 const COLORS = {
-  primary: '#2E5C8D',
-  primaryDark: '#1E3F66',
+  primary: '#444444',
+  primaryDark: '#222222',
   accent: '#FF9500',
   background: '#F7F8FA',
   card: '#FFFFFF',
@@ -56,6 +58,10 @@ export const CallProConfirmationScreen = () => {
   const route = useRoute<RouteProp<CallProConfirmationRouteParams, 'CallProConfirmation'>>();
   const { requestDetails } = route.params;
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Add state for selected payment method
+  const [selectedPaymentMethodId, setSelectedPaymentMethodId] = useState<string | null>(null);
+  const [hasCheckingPaymentMethods, setHasCheckingPaymentMethods] = useState(true);
 
   // Calculate estimated cost based on service type
   const getServiceInfo = () => {
@@ -69,6 +75,11 @@ export const CallProConfirmationScreen = () => {
       "Landscaping Pro": { baseRate: "25", baseMinutes: 15, additionalRate: "1.2" },
       "Home Inspector": { baseRate: "45", baseMinutes: 15, additionalRate: "3" },
       "Property Manager": { baseRate: "40", baseMinutes: 15, additionalRate: "2" },
+      "Real Estate Investor": { baseRate: "55", baseMinutes: 15, additionalRate: "2.8" },
+      "First-Time Home Buying Support": { baseRate: "30", baseMinutes: 15, additionalRate: "1.5" },
+      "Airbnb Hosts/Cohosts": { baseRate: "30", baseMinutes: 15, additionalRate: "1.5" },
+      "General Contractor": { baseRate: "45", baseMinutes: 15, additionalRate: "2.2" },
+      "Property Attorney": { baseRate: "60", baseMinutes: 15, additionalRate: "3.0" },
     };
     
     return serviceMap[requestDetails.service_type] || { baseRate: "30", baseMinutes: 15, additionalRate: "1.5" };
@@ -92,10 +103,31 @@ export const CallProConfirmationScreen = () => {
     }
   };
 
+  // Handle payment method selection
+  const handlePaymentMethodSelected = useCallback((paymentMethodId: string | null) => {
+    setSelectedPaymentMethodId(paymentMethodId);
+    setHasCheckingPaymentMethods(false);
+  }, []);
+
+  // Handle add new card
+  const handleAddCard = useCallback(() => {
+    navigation.navigate('AddPaymentCard');
+  }, [navigation]);
+
   const handleConfirmRequest = async () => {
+    // Validate payment method exists
+    if (!selectedPaymentMethodId) {
+      Alert.alert(
+        "Payment Method Required",
+        "Please add or select a payment method to continue."
+      );
+      return;
+    }
+    
     setIsLoading(true);
     
     try {
+      const user = await getCurrentUser();
       const formData = new FormData();
       
       // Format request_details object according to what backend expects
@@ -104,7 +136,8 @@ export const CallProConfirmationScreen = () => {
         description: requestDetails.description,
         city: requestDetails.city,
         state: requestDetails.state,
-        availability: requestDetails.availability
+        availability_slots: requestDetails.availability,
+        payment_method_id: selectedPaymentMethodId // Add payment method to request
       };
       
       // Add the data field as a JSON string as expected by the backend
@@ -139,7 +172,7 @@ export const CallProConfirmationScreen = () => {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'multipart/form-data',
-          'Authorization': await getUserId()
+          'Authorization': user.userId, // Add authorization header
         },
         body: formData,
       });
@@ -182,16 +215,8 @@ export const CallProConfirmationScreen = () => {
     }
   };
 
-  // Helper function to get the user ID
-  const getUserId = async () => {
-    try {
-      const user = await getCurrentUser();
-      return user.userId;
-    } catch (error) {
-      console.error('Error getting user ID:', error);
-      return '';
-    }
-  };
+  // Check if form is valid and ready for submission
+  const isFormValid = selectedPaymentMethodId !== null && !hasCheckingPaymentMethods;
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -318,6 +343,15 @@ export const CallProConfirmationScreen = () => {
               <Text style={styles.paymentNote}>
                 Your payment method on file will be charged automatically after the consultation.
               </Text>
+
+              {/* Add PaymentCardSelector component */}
+              <View style={styles.paymentMethodSection}>
+                <Text style={styles.paymentMethodTitle}>Payment Method</Text>
+                <PaymentCardSelector 
+                  onCardSelected={handlePaymentMethodSelected}
+                  onAddCardPress={handleAddCard}
+                />
+              </View>
             </View>
           </View>
         </View>
@@ -331,12 +365,15 @@ export const CallProConfirmationScreen = () => {
         
         {/* Confirm Button */}
         <TouchableOpacity
-          style={styles.confirmButton}
+          style={[
+            styles.confirmButton,
+            (!isFormValid || isLoading) && styles.disabledButton
+          ]}
           onPress={handleConfirmRequest}
-          disabled={isLoading}
+          disabled={!isFormValid || isLoading}
         >
           <ExpoLinearGradient
-            colors={[COLORS.primary, COLORS.primaryDark]}
+            colors={isFormValid ? [COLORS.primary, COLORS.primaryDark] : ['#AAAAAA', '#888888']}
             style={styles.confirmButtonGradient}
           >
             {isLoading ? (
@@ -349,6 +386,12 @@ export const CallProConfirmationScreen = () => {
             )}
           </ExpoLinearGradient>
         </TouchableOpacity>
+        
+        {!isFormValid && !hasCheckingPaymentMethods && (
+          <Text style={styles.paymentRequiredText}>
+            Please select a payment method to continue
+          </Text>
+        )}
         
         {/* Cancel Button */}
         <TouchableOpacity
@@ -551,5 +594,25 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
     color: COLORS.textSecondary,
+  },
+  // Add new styles for payment method section
+  paymentMethodSection: {
+    marginTop: 16,
+  },
+  paymentMethodTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.text,
+    marginBottom: 12,
+  },
+  disabledButton: {
+    opacity: 0.6,
+    shadowOpacity: 0.05,
+  },
+  paymentRequiredText: {
+    textAlign: 'center',
+    color: COLORS.error,
+    fontSize: 14,
+    marginBottom: 16,
   },
 });

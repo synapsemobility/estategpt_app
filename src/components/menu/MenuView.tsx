@@ -24,8 +24,8 @@ const MENU_WIDTH = Math.min(width * 0.85, 320);
 
 // Define consistent colors to match app theme
 const COLORS = {
-  primary: '#2E5C8D',
-  primaryDark: '#1E3F66',
+  primary: '#444444',
+  primaryDark: '#222222',
   accent: '#FF9500',
   background: '#FFFFFF',
   text: '#2C3E50',

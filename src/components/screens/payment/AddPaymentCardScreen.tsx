@@ -143,7 +143,7 @@ export const AddPaymentCardScreen: React.FC = () => {
               {/* Card illustration */}
               <View style={styles.cardIllustrationContainer}>
                 <LinearGradient
-                  colors={['#5A7BF0', '#4285F4']}
+                  colors={['#444444', '#222222']}
                   style={styles.cardIllustration}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
@@ -182,7 +182,7 @@ export const AddPaymentCardScreen: React.FC = () => {
                 </View>
                 
                 <View style={styles.secureNoteContainer}>
-                  <Icon name="lock-closed" size={20} color="#4285F4" />
+                  <Icon name="lock-closed" size={20} color="#222222" />
                   <View style={styles.secureNoteTextContainer}>
                     <Text style={styles.secureNoteTitle}>Secure Payment Processing</Text>
                     <Text style={styles.secureNoteText}>
@@ -200,15 +200,15 @@ export const AddPaymentCardScreen: React.FC = () => {
                   disabled={!isCardComplete || loading}
                 >
                   {loading ? (
-                    <ActivityIndicator size="small" color="#FFFFFF" />
+                    <ActivityIndicator size="small" color="#222222" />
                   ) : (
                     <LinearGradient
-                      colors={['#4285F4', '#2A75F3']}
+                      colors={['#555555', '#333333']}
                       style={styles.addButtonGradient}
                       start={{ x: 0, y: 0 }}
                       end={{ x: 1, y: 0 }}
                     >
-                      <Icon name="card" size={20} color="#FFFFFF" />
+                      <Icon name="card" size={20} color="#000000" />
                       <Text style={styles.addButtonText}>Add Card</Text>
                     </LinearGradient>
                   )}

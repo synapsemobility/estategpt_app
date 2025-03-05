@@ -1,5 +1,14 @@
-import { API_URL } from '../config/api';
+// import { API_URL } from '../config/api';
 import { ServerEnvironment } from '../config/server.config';
+
+interface PaymentMethod {
+  id: string;
+  brand: string;
+  last4: string;
+  expMonth: number;
+  expYear: number;
+  isDefault?: boolean;
+}
 
 // API URL from server config
 const API_URL = ServerEnvironment.baseURL;
@@ -164,17 +173,26 @@ export const savePaymentMethod = async (paymentMethodId: string, userId: string)
 };
 
 /**
- * Retrieve saved payment methods from your backend
+ * Fetches payment methods for the current user
+ * @param userId The user's ID for authorization
+ * @returns Object containing payment methods and status
  */
-export const fetchPaymentMethods = async (userId: string) => {
+export const fetchPaymentMethods = async (userId: string): Promise<{ 
+  status: string; 
+  paymentMethods: PaymentMethod[] 
+}> => {
   try {
-    const response = await fetch(`${API_URL}/payment/methods`, {
+    const response = await fetch(ServerEnvironment.payment.getPaymentMethods, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': userId
+        'Authorization': userId,
       }
     });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
 
     const data = await response.json();
     
@@ -182,10 +200,16 @@ export const fetchPaymentMethods = async (userId: string) => {
       throw new Error(data.message || 'Failed to load payment methods');
     }
     
-    return data;
+    return {
+      status: 'success',
+      paymentMethods: data.paymentMethods || []
+    };
   } catch (error) {
     console.error('Error fetching payment methods:', error);
-    throw error;
+    return {
+      status: 'error',
+      paymentMethods: []
+    };
   }
 };
 
@@ -217,28 +241,36 @@ export const removePaymentMethod = async (paymentMethodId: string, userId: strin
 };
 
 /**
- * Set a payment method as default
+ * Sets a payment method as default
+ * @param userId The user's ID for authorization
+ * @param paymentMethodId The ID of the payment method to set as default
+ * @returns Object containing operation status and message
  */
-export const setDefaultPaymentMethod = async (userId: string, paymentMethodId: string) => {
+export const setDefaultPaymentMethod = async (userId: string, paymentMethodId: string): Promise<{
+  status: string;
+  message: string;
+}> => {
   try {
-    const response = await fetch(`${API_URL}/payment/set-default-method`, {
+    const response = await fetch(ServerEnvironment.payment.setDefaultMethod, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': userId
+        'Authorization': userId,
       },
       body: JSON.stringify({ paymentMethodId })
     });
-    
-    const data = await response.json();
-    
-    if (data.status !== 'success') {
-      throw new Error(data.message || 'Failed to set default payment method');
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
-    
+
+    const data = await response.json();
     return data;
   } catch (error) {
     console.error('Error setting default payment method:', error);
-    throw error;
+    return {
+      status: 'error',
+      message: error instanceof Error ? error.message : 'Unknown error occurred'
+    };
   }
 };

@@ -2,7 +2,7 @@
   "expo": {
     "name": "EstateGPT",
     "slug": "estategpt",
-    "version": "1.86",
+    "version": "1.87",
     "orientation": "portrait",
     "icon": "./assets/logo.png",
     "userInterfaceStyle": "light",

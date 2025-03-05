@@ -12,6 +12,7 @@ import { DeleteAccountScreen } from '../screens/account/DeleteAccountScreen';
 import { SignInHeader } from './SignInHeader';
 import { LinearGradient } from 'expo-linear-gradient';
 import { CallProScreen } from '../screens/callpro/CallProScreen';
+import { CallProConfirmationScreen } from '../screens/callpro/CallProConfirmationScreen';
 import { ScheduledCallsScreen } from '../screens/callpro/ScheduledCallsScreen';
 import { ProRequestsScreen } from '../screens/callpro/ProRequestsScreen';
 import { VideoCallScreen } from '../screens/callpro/VideoCallScreen';
@@ -22,6 +23,7 @@ import { BecomeProScreen } from '../screens/professional/BecomeProScreen';
 import { UserAgreementModal, hasAcceptedUserAgreement } from './UserAgreementModal';
 import { AddPaymentCardScreen } from '../screens/payment/AddPaymentCardScreen';
 import { PaymentMethodsScreen } from '../screens/payment/PaymentMethodsScreen';
+
 
 type RootStackParamList = {
   Chat: { userID: string | undefined };
@@ -44,6 +46,7 @@ type RootStackParamList = {
   BecomePro: undefined;
   AddPaymentCard: undefined;
   PaymentMethods: undefined;
+  CallProConfirmation: undefined;
 };
 
 // Initialize the stack navigator with your route param list
@@ -194,6 +197,16 @@ const AppContent = () => {
           headerShown: false, // Changed to false to use our custom header
           animation: 'slide_from_right'
         }}
+      />
+      
+      {/* Add this screen to the stack navigator */}
+      <Stack.Screen 
+        name="CallProConfirmation" 
+        component={CallProConfirmationScreen}
+        options={{ 
+          headerShown: false,
+          animation: 'slide_from_right'
+        }} 
       />
     </Stack.Navigator>
   );

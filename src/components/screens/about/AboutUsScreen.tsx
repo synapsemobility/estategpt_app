@@ -21,8 +21,8 @@ const cardWidth = width - 48;
 
 // Consistent color scheme
 const COLORS = {
-  primary: '#2E5C8D',
-  primaryDark: '#1E3F66',
+  primary: '#444444',
+  primaryDark: '#222222',
   secondary: '#555555',
   accent: '#FF9500',
   background: '#F7F8FA',
@@ -210,7 +210,7 @@ export const AboutUsScreen = () => {
           {/* Expert Call Card */}
           <View style={styles.expertCardContainer}>
             <Image
-              source={require('../../../../assets/images/video-call.png')}
+              source={require('../../../../assets/images/callpro-hero.png')}
               style={styles.expertImage}
               resizeMode="cover"
             />
@@ -326,8 +326,8 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   heroImage: {
-    width: 120,
-    height: 120,
+    width: 320,
+    height: 200,
     marginBottom: 16,
   },
   heroTitle: {
@@ -480,7 +480,7 @@ const styles = StyleSheet.create({
   },
   expertImage: {
     width: cardWidth,
-    height: 180,
+    height: 330,
   },
   expertCardContent: {
     padding: 16,
