@@ -66,7 +66,8 @@ export const UserAgreementModal: React.FC<UserAgreementModalProps> = ({ isVisibl
           <ScrollView 
             style={styles.scrollView}
             onScroll={handleScroll}
-            scrollEventThrottle={400}
+            scrollEventThrottle={16} // Change from 400 to 16 for more responsive scrolling
+            showsVerticalScrollIndicator={true}
           >
             <Text style={styles.sectionTitle}>Terms of Service & Privacy Policy</Text>
             

@@ -6,7 +6,6 @@
     "orientation": "portrait",
     "icon": "./assets/logo.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
     "splash": {
       "image": "./assets/logo.png",
       "resizeMode": "contain",
@@ -33,10 +32,7 @@
       "package": "com.singaporv.estategpt",
       "permissions": [
         "android.permission.RECORD_AUDIO"
-      ],
-      "enableProguardInReleaseBuilds": false,
-      "enableHermes": true,
-      "minSdkVersion": 24
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"

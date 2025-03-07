@@ -60,9 +60,6 @@
             ReferencedContainer = "container:EstateGPT.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
-      <StoreKitConfigurationFileReference
-         identifier = "../EstateGPT/com.synapsemobility.storekit">
-      </StoreKitConfigurationFileReference>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"

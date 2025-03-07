@@ -69,3 +69,14 @@ android/app/build/outputs/bundle/playRelease/app-play-release.aab
 
 
 
+## Android Debug
+Address all issues in:
+```
+npx expo-doctor
+```
+
+For device:
+npx expo run:android --device
+
+For simulator: 
+npx expo run:android 

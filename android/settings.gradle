@@ -1,22 +1,6 @@
-// Fix: Handle potentially duplicate gradle plugin paths by using a helper function
 pluginManagement {
-    // Helper function to find the correct gradle plugin path
-    def findGradlePluginPath = {
-        try {
-            return new File(["node", "--print", "require.resolve('@react-native/gradle-plugin/package.json', { paths: [require.resolve('react-native/package.json')] })"].execute(null, rootDir).text.trim()).getParentFile().toString()
-        } catch (Exception e) {
-            println "Warning: Failed to resolve gradle plugin path. Falling back to default."
-            return new File(rootProject.projectDir, '../node_modules/@react-native/gradle-plugin').toString()
-        }
-    }
-
-    // Use the helper function to get the path
-    def pluginPath = findGradlePluginPath()
-    println "Using Gradle Plugin Path: ${pluginPath}"
-    
-    includeBuild(pluginPath)
+    includeBuild(new File(["node", "--print", "require.resolve('@react-native/gradle-plugin/package.json', { paths: [require.resolve('react-native/package.json')] })"].execute(null, rootDir).text.trim()).getParentFile().toString())
 }
-
 plugins { id("com.facebook.react.settings") }
 
 extensions.configure(com.facebook.react.ReactSettingsExtension) { ex ->
@@ -39,51 +23,16 @@ extensions.configure(com.facebook.react.ReactSettingsExtension) { ex ->
 
 rootProject.name = 'EstateGPT'
 
-// Fix: Handle missing native modules gradle file gracefully
-def nativeModulesSettingsFile = new File(rootProject.projectDir, '../node_modules/@react-native-community/cli-platform-android/native_modules.gradle')
-if (nativeModulesSettingsFile.exists()) {
-    apply from: nativeModulesSettingsFile
-    applyNativeModulesSettingsGradle(settings)
-} else {
-    println "Warning: native_modules.gradle not found at ${nativeModulesSettingsFile.absolutePath}"
-}
-
-include ':app'
-
-// Fix: Remove the duplicate includeBuild that's causing the conflict
-// includeBuild('../node_modules/@react-native/gradle-plugin')
-
 dependencyResolutionManagement {
   versionCatalogs {
-    // Fix: Use a safer method to find the libs.versions.toml file
     reactAndroidLibs {
-      try {
-        def reactNativePath = ["node", "--print", "require.resolve('react-native/package.json')"].execute(null, rootDir).text.trim()
-        def tomlFile = new File(reactNativePath).getParentFile().toPath().resolve("gradle/libs.versions.toml").toFile()
-        if (tomlFile.exists()) {
-          from(files(tomlFile))
-        } else {
-          println "Warning: libs.versions.toml not found at ${tomlFile.absolutePath}"
-        }
-      } catch (Exception e) {
-        println "Warning: Failed to resolve react-native gradle libs: ${e.message}"
-      }
+      from(files(new File(["node", "--print", "require.resolve('react-native/package.json')"].execute(null, rootDir).text.trim(), "../gradle/libs.versions.toml")))
     }
   }
 }
 
-// Fix: Safer Expo autolinking
-try {
-    def expoPackageJsonPath = ["node", "--print", "require.resolve('expo/package.json')"].execute(null, rootDir).text.trim()
-    def expoAutolinkingGradle = new File(expoPackageJsonPath).getParentFile().toPath().resolve("scripts/autolinking.gradle").toFile()
-    
-    if (expoAutolinkingGradle.exists()) {
-        apply from: expoAutolinkingGradle
-        useExpoModules()
-    } else {
-        println "Warning: Expo autolinking script not found at ${expoAutolinkingGradle.absolutePath}"
-    }
-} catch (Exception e) {
-    println "Warning: Failed to apply Expo autolinking: ${e.message}"
-}
+apply from: new File(["node", "--print", "require.resolve('expo/package.json')"].execute(null, rootDir).text.trim(), "../scripts/autolinking.gradle");
+useExpoModules()
 
+include ':app'
+includeBuild(new File(["node", "--print", "require.resolve('@react-native/gradle-plugin/package.json', { paths: [require.resolve('react-native/package.json')] })"].execute(null, rootDir).text.trim()).getParentFile())

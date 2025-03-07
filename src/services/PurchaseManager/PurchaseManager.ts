@@ -6,6 +6,8 @@ import * as RNIap from 'react-native-iap';
 export class PurchaseManager {
   @observable.shallow products: RNIap.Subscription[] = [];
   @observable purchasedSubscriptions: string[] = [];
+  @observable isAvailable: boolean = false;
+  @observable isInitialized: boolean = false;
 
   // Mark as readonly so MobX does not try to make it observable.
   private readonly subscriptionIds = Platform.select({
@@ -29,10 +31,77 @@ export class PurchaseManager {
       products: observable.shallow,
       purchasedSubscriptions: observable.shallow,
     });
-    this.setupIAPListeners();
+  }
+
+  async initialize() {
+    try {
+      // Only set up listeners if we successfully initialize
+      await this.initializeConnection();
+      if (this.isAvailable) {
+        this.setupIAPListeners();
+        await this.fetchProducts();
+        await this.checkSubscriptionStatus();
+      }
+    } catch (error) {
+      console.log('Purchase initialization error (handled):', error);
+      runInAction(() => {
+        this.isAvailable = false;
+      });
+    } finally {
+      runInAction(() => {
+        this.isInitialized = true;
+      });
+    }
+  }
+
+  private async initializeConnection() {
+    try {
+      if (Platform.OS === 'ios') {
+        await RNIap.clearTransactionIOS();
+      }
+      
+      await RNIap.initConnection();
+      runInAction(() => {
+        this.isAvailable = true;
+      });
+      console.log('IAP connection initialized successfully');
+      
+    } catch (error) {
+      console.log('IAP not available:', error);
+      runInAction(() => {
+        this.isAvailable = false;
+      });
+      
+      // If running in a simulator or development environment, provide mock data
+      if (__DEV__) {
+        console.log('Using mock IAP data for development');
+        runInAction(() => {
+          this.products = [
+            {
+              productId: '00',
+              title: 'Homeowner Plan (Dev)',
+              description: 'Mock subscription for development',
+              price: '$9.99',
+              currency: 'USD',
+              localizedPrice: '$9.99',
+            },
+            {
+              productId: '01',
+              title: 'Pro Plan (Dev)',
+              description: 'Mock subscription for development',
+              price: '$19.99',
+              currency: 'USD',
+              localizedPrice: '$19.99',
+            }
+          ] as unknown as RNIap.Subscription[];
+        });
+      }
+    }
   }
 
   private setupIAPListeners() {
+    if (!this.isAvailable) return;
+    
     this.purchaseUpdateSubscription = RNIap.purchaseUpdatedListener(async (purchase) => {
       try {
         await RNIap.finishTransaction({ purchase });
@@ -55,29 +124,10 @@ export class PurchaseManager {
     });
   }
 
-  async initialize() {
-    try {
-      if (Platform.OS === 'ios') {
-        await RNIap.clearTransactionIOS();
-      }
-      
-      await RNIap.initConnection();
-      
-      const products = await RNIap.getSubscriptions({ skus: [...this.subscriptionIds] });
-      
-      const newProducts = Array.isArray(products) ? [...products] : [];
-      runInAction(() => {
-        this.products = newProducts;
-      });
-      
-    } catch (error) {
-      console.error('IAP initialization error:', error);
-    }
-  }
-
   async fetchProducts() {
+    if (!this.isAvailable) return;
+    
     try {
-      // Again, pass a plain copy
       const products = await RNIap.getSubscriptions({ skus: [...this.subscriptionIds] });
       console.log('Fetched products:', products);
       runInAction(() => {
@@ -89,6 +139,8 @@ export class PurchaseManager {
   }
 
   async checkSubscriptionStatus() {
+    if (!this.isAvailable) return;
+    
     try {
       const purchases = await RNIap.getAvailablePurchases();
       console.log('Available purchases:', purchases);
@@ -101,8 +153,22 @@ export class PurchaseManager {
   }
 
   async purchase(productId: string) {
+    if (!this.isAvailable) {
+      console.log('IAP not available - simulating purchase in dev mode');
+      if (__DEV__) {
+        // Simulate a successful purchase in development mode
+        runInAction(() => {
+          if (!this.purchasedSubscriptions.includes(productId)) {
+            this.purchasedSubscriptions.push(productId);
+          }
+        });
+        await this.sendSubscriptionToBackend(productId, 'dev-transaction-id');
+        return;
+      }
+      throw new Error('In-app purchases are not available');
+    }
+    
     try {
-      // Pass the productId as a string per the new API
       await RNIap.requestSubscription({ sku: productId });
     } catch (error) {
       console.error('Purchase failed:', error);
@@ -111,6 +177,8 @@ export class PurchaseManager {
   }
 
   async restorePurchases() {
+    if (!this.isAvailable) return;
+    
     try {
       const restored = await RNIap.getAvailablePurchases();
       runInAction(() => {
@@ -147,6 +215,8 @@ export class PurchaseManager {
   }
 
   cleanupListeners() {
+    if (!this.isAvailable) return;
+    
     if (this.purchaseUpdateSubscription) {
       this.purchaseUpdateSubscription.remove();
       this.purchaseUpdateSubscription = null;
