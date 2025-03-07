@@ -67,6 +67,14 @@ android/app/build/outputs/bundle/playRelease/app-play-release.aab
 ```
 
 
+# Current Status
+
+## IOS
+npx expo run:ios --device "Daddy"
+
+
+## Android
+npx expo run:android
 
 
 ## Android Debug
@@ -80,3 +88,7 @@ npx expo run:android --device
 
 For simulator: 
 npx expo run:android 
+
+
+
+

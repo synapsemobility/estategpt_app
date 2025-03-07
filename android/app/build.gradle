@@ -125,6 +125,18 @@ android {
     androidResources {
         ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:!CVS:!thumbs.db:!picasa.ini:!*~'
     }
+    
+    // Add flavor dimensions to match react-native-iap
+    flavorDimensions "store"
+    productFlavors {
+        play {
+            dimension "store"
+        }
+        // Uncomment if you need Amazon appstore support
+        // amazon {
+        //     dimension "store"
+        // }
+    }
 }
 
 // Apply static values from `gradle.properties` to the `android.packagingOptions`
