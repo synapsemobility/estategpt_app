@@ -1834,10 +1834,10 @@ PODS:
     - React-Core
   - RNDateTimePicker (8.2.0):
     - React-Core
-  - RNFBApp (21.11.0):
+  - RNFBApp (21.12.0):
     - Firebase/CoreOnly (= 11.8.0)
     - React-Core
-  - RNFBMessaging (21.11.0):
+  - RNFBMessaging (21.12.0):
     - Firebase/Messaging (= 11.8.0)
     - FirebaseCoreExtension
     - React-Core
@@ -2335,8 +2335,8 @@ SPEC CHECKSUMS:
   RNCAsyncStorage: b9f5f78da5d16a853fe3dc22e8268d932fc45a83
   RNCPicker: 124b4fb5859ba1a3fd53a91e16d1e7a0fc016e59
   RNDateTimePicker: 818460dc31b0dc5ec58289003e27dd8d022fb79c
-  RNFBApp: fd5bf956d6114cd3172680ab9c2185143faaa385
-  RNFBMessaging: 387873ff9c0deb29ec76b1a5c492d06012af58f4
+  RNFBApp: 5e27e8311042d41fa8350f1751ab42e042c39d52
+  RNFBMessaging: 72cf5cca8a14ef9dc66b82b75b5cca1091f169e5
   RNIap: f94647b3a3dbd5fa08ad7ed847eb588aa5fe95fe
   RNInAppBrowser: 6d3eb68d471b9834335c664704719b8be1bfdb20
   RNPermissions: 92fa8c09d19da18e4f5e55971d666e1a2d1f480a
