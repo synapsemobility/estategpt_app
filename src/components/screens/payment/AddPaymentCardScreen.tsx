@@ -174,7 +174,15 @@ export const AddPaymentCardScreen: React.FC = () => {
                       cvc: 'CVC',
                       postalCode: '12345',
                     }}
-                    cardStyle={styles.cardFieldStyle}
+                    cardStyle={{
+                      backgroundColor: '#F9F9F9',
+                      textColor: '#333333',
+                      textErrorColor: '#FF0000',
+                      placeholderColor: '#999999',
+                      // Remove potentially problematic style properties for Android
+                      fontSize: 16,
+                      // borderWidth and borderRadius can cause issues on Android
+                    }}
                     style={styles.cardField}
                     onCardChange={handleCardChange}
                     testID="card-field"
