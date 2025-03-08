@@ -41,8 +41,8 @@ type CallProConfirmationRouteParams = {
 
 // Define consistent colors to match app theme
 const COLORS = {
-  primary: '#444444',
-  primaryDark: '#222222',
+  primary: '#777777',
+  primaryDark: '#000000',
   accent: '#FF9500',
   background: '#F7F8FA',
   card: '#FFFFFF',

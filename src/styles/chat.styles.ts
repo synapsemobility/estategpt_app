@@ -162,7 +162,7 @@ export const styles = StyleSheet.create({
     marginRight: 8,
     marginBottom: 8,
     borderWidth: 0,
-    width: 180,
+    width: 200,
     height: 70,
     justifyContent: 'center',
     shadowColor: '#000',
@@ -216,7 +216,7 @@ export const styles = StyleSheet.create({
   sendButton: {
     padding: 4,
     borderRadius: 18,
-    backgroundColor: '#555555',
+    backgroundColor: '#333333',
   },
   messageContainer: {
     maxWidth: '85%',

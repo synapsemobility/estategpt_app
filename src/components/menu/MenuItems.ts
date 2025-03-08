@@ -16,6 +16,11 @@ const baseMenuItems: MenuItem[] = [
   { title: 'About Us', icon: 'information-circle', route: 'AboutUs' },
   { title: 'Submit Feedback', icon: 'chatbubble', route: 'Feedback' },
   { 
+    title: 'Contact Founder', 
+    icon: 'mail', 
+    route: 'ContactFounder',
+  },
+  { 
     title: 'Payment Methods', 
     icon: 'card', 
     route: 'PaymentMethods',

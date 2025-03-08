@@ -24,8 +24,8 @@ const MENU_WIDTH = Math.min(width * 0.85, 320);
 
 // Define consistent colors to match app theme
 const COLORS = {
-  primary: '#444444',
-  primaryDark: '#222222',
+  primary: '#777777',
+  primaryDark: '#000000',
   accent: '#FF9500',
   background: '#FFFFFF',
   text: '#2C3E50',
@@ -63,7 +63,7 @@ export const MenuView: React.FC<MenuViewProps> = ({
       !['SignOut', 'DeleteAccount', 'User', 'Subscription', 'Feedback'].includes(item.route)
     ),
     account: menuItems.filter(item => 
-      ['User', 'Subscription', 'Feedback'].includes(item.route)
+      ['User', 'Subscription', 'Feedback', 'ContactFounder'].includes(item.route)
     ),
     danger: menuItems.filter(item => 
       ['DeleteAccount', 'SignOut'].includes(item.route)

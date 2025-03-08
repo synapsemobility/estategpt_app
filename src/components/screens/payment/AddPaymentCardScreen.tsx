@@ -143,7 +143,7 @@ export const AddPaymentCardScreen: React.FC = () => {
               {/* Card illustration */}
               <View style={styles.cardIllustrationContainer}>
                 <LinearGradient
-                  colors={['#444444', '#222222']}
+                  colors={['#777777', '#000000']}
                   style={styles.cardIllustration}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
@@ -190,7 +190,7 @@ export const AddPaymentCardScreen: React.FC = () => {
                 </View>
                 
                 <View style={styles.secureNoteContainer}>
-                  <Icon name="lock-closed" size={20} color="#222222" />
+                  <Icon name="lock-closed" size={20} color="#000000" />
                   <View style={styles.secureNoteTextContainer}>
                     <Text style={styles.secureNoteTitle}>Secure Payment Processing</Text>
                     <Text style={styles.secureNoteText}>
@@ -208,7 +208,7 @@ export const AddPaymentCardScreen: React.FC = () => {
                   disabled={!isCardComplete || loading}
                 >
                   {loading ? (
-                    <ActivityIndicator size="small" color="#222222" />
+                    <ActivityIndicator size="small" color="#000000" />
                   ) : (
                     <LinearGradient
                       colors={['#555555', '#333333']}

@@ -264,7 +264,7 @@ export const PaymentMethodsScreen: React.FC = () => {
               style={styles.setDefaultButton}
               onPress={() => handleSetDefault(item.id)}
             >
-              <Icon name="checkmark-circle-outline" size={18} color="#444444" />
+              <Icon name="checkmark-circle-outline" size={18} color="#777777" />
               <Text style={styles.setDefaultButtonText}>Set as Default</Text>
             </TouchableOpacity>
           )}
@@ -273,7 +273,7 @@ export const PaymentMethodsScreen: React.FC = () => {
             style={styles.deleteButton}
             onPress={() => handleDeletePaymentMethod(item.id, item.isDefault)}
           >
-            <Icon name="trash-outline" size={18} color="#444444" />
+            <Icon name="trash-outline" size={18} color="#777777" />
             <Text style={styles.deleteButtonText}>Remove</Text>
           </TouchableOpacity>
         </View>
@@ -310,7 +310,7 @@ export const PaymentMethodsScreen: React.FC = () => {
 
       {loading && !refreshing ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#444444" />
+          <ActivityIndicator size="large" color="#777777" />
         </View>
       ) : (
         <FlatList
@@ -326,7 +326,7 @@ export const PaymentMethodsScreen: React.FC = () => {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              colors={['#444444']}
+              colors={['#777777']}
             />
           }
           ListEmptyComponent={EmptyState}
@@ -343,7 +343,7 @@ export const PaymentMethodsScreen: React.FC = () => {
             disabled={loading}
           >
             <LinearGradient
-              colors={['#444444', '#2A75F3']}
+              colors={['#777777', '#2A75F3']}
               style={styles.addButtonGradient}
             >
               <Icon name="add" size={22} color="#FFFFFF" />

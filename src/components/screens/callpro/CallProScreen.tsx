@@ -203,8 +203,8 @@ interface TimeSlot {
 
 // Define a more refined color theme for a premium feel
 const COLORS = {
-  primary: '#444444',       // Deep blue for primary actions
-  primaryDark: '#222222',   // Darker blue for gradients
+  primary: '#777777',       // Deep blue for primary actions
+  primaryDark: '#000000',   // Darker blue for gradients
   primaryLight: '#4A7DB3',  // Lighter blue for some elements
   accent: '#FF9500',        // Orange accent for important elements
   background: '#F7F8FA',    // Light background

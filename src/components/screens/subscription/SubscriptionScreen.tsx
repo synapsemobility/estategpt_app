@@ -25,8 +25,8 @@ const { width } = Dimensions.get('window');
 
 // Define consistent colors
 const COLORS = {
-  primary: '#444444',
-  primaryDark: '#222222',
+  primary: '#777777',
+  primaryDark: '#000000',
   premium: '#FF9500',
   background: '#F7F8FA',
   card: '#FFFFFF',

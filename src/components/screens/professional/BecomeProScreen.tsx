@@ -248,7 +248,7 @@ export const BecomeProScreen = () => {
         {/* Header Section */}
         <View style={styles.headerCard}>
           <LinearGradient
-            colors={['#555', '#333']}
+            colors={['#777777', '#000000']}
             style={styles.headerGradient}
           >
             <Image 
@@ -483,7 +483,7 @@ export const BecomeProScreen = () => {
           disabled={isLoading}
         >
           <LinearGradient
-            colors={['#555', '#333']}
+            colors={['#777', '#000']}
             style={styles.submitGradient}
           >
             {isLoading ? (

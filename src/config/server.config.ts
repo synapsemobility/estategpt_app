@@ -19,6 +19,9 @@ export const ServerEnvironment = {
   // New endpoint for getting professional profile
   getProProfileEndpoint: 'https://chat.estategpt.io/user/get-pro-profile',
   
+  // Add contact founder endpoint
+  contactFounderEndpoint: 'https://chat.estategpt.io/api/contact-founder',
+  
   // Payment related endpoints - corrected URLs to match backend paths
   payment: {
     baseURL: 'https://chat.estategpt.io/payment', // Removed /api prefix
@@ -44,3 +47,4 @@ export const ServerEnvironment = {
 // Helper functions to easily access configuration values
 export const getApiUrl = () => ServerEnvironment.baseURL;
 export const getPaymentApiUrl = () => ServerEnvironment.payment.baseURL;
+export const getContactFounderUrl = () => ServerEnvironment.contactFounderEndpoint;

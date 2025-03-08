@@ -17,13 +17,13 @@ import { ScheduledCallsScreen } from '../screens/callpro/ScheduledCallsScreen';
 import { ProRequestsScreen } from '../screens/callpro/ProRequestsScreen';
 import { VideoCallScreen } from '../screens/callpro/VideoCallScreen';
 import { TestVideoCallScreen } from '../screens/callpro/TestVideoCallScreen';
-import { ProMeetingsScreen } from '../screens/callpro/ProMeetingsScreen'; // Updated import
+import { ProMeetingsScreen } from '../screens/callpro/ProMeetingsScreen'; 
 import { ProProfileScreen } from '../screens/professional/ProProfileScreen';
 import { BecomeProScreen } from '../screens/professional/BecomeProScreen';
 import { UserAgreementModal, hasAcceptedUserAgreement } from './UserAgreementModal';
 import { AddPaymentCardScreen } from '../screens/payment/AddPaymentCardScreen';
 import { PaymentMethodsScreen } from '../screens/payment/PaymentMethodsScreen';
-
+import ContactFounderScreen from '../screens/ContactFounderScreen'; 
 
 type RootStackParamList = {
   Chat: { userID: string | undefined };
@@ -47,6 +47,7 @@ type RootStackParamList = {
   AddPaymentCard: undefined;
   PaymentMethods: undefined;
   CallProConfirmation: undefined;
+  ContactFounder: undefined; // Add this type definition
 };
 
 // Initialize the stack navigator with your route param list
@@ -207,6 +208,14 @@ const AppContent = () => {
           headerShown: false,
           animation: 'slide_from_right'
         }} 
+      />
+      <Stack.Screen 
+        name="ContactFounder"
+        component={ContactFounderScreen}
+        options={{ 
+          headerShown: false,
+          animation: 'slide_from_right'
+        }}
       />
     </Stack.Navigator>
   );

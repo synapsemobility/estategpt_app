@@ -57,7 +57,13 @@ npx expo run:android --variant playRelease
 
 3. Create abb for  Play Store upload
 ```
+# Navigate to the android directory
 cd android
+
+# Clean the project
+./gradlew clean
+
+# Build the AAB file
 ./gradlew bundlePlayRelease
 ```
 

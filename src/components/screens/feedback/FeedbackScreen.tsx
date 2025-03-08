@@ -16,8 +16,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 const { width } = Dimensions.get('window');
 const COLORS = {
-  primary: '#444444',
-  primaryDark: '#222222',
+  primary: '#777777',
+  primaryDark: '#000000',
   background: '#FFFFFF',
   text: '#2C3E50',
   textSecondary: '#6A7A8C',
