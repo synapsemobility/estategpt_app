@@ -103,6 +103,6 @@ yarn-error.*
 *.tsbuildinfo
 
 # @end expo-cli/android
-/ios
-/android
-/ios
+# /ios
+# /android
+# /ios
