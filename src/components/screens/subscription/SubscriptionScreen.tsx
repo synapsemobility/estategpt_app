@@ -16,9 +16,7 @@ import {
 import { observer } from 'mobx-react-lite';
 import Icon from '@expo/vector-icons/Ionicons';
 import { ScreenHeader } from '../../common/ScreenHeader';
-import { usePurchaseManager } from '../../../services/PurchaseManager';
-import * as RNIap from 'react-native-iap';
-import { toJS } from 'mobx';
+import { useRevenueCatManager } from '../../../services/PurchaseManager/useRevenueCatManager';
 import { LinearGradient } from 'expo-linear-gradient';
 
 const { width } = Dimensions.get('window');
@@ -134,8 +132,9 @@ const Feature = ({ icon, text, isPro }) => (
 );
 
 export const SubscriptionScreen = observer(() => {
-  const purchaseManager = usePurchaseManager();
+  const purchaseManager = useRevenueCatManager();
   const [isLoading, setIsLoading] = useState(true);
+  const [products, setProducts] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -143,7 +142,41 @@ export const SubscriptionScreen = observer(() => {
       try {
         setIsLoading(true);
         setError(null);
+        
+        // Initialize RevenueCat
         await purchaseManager.initialize();
+        
+        // Format offerings into products for the UI
+        const formattedProducts = [];
+        
+        // Add pro plan (first in the list)
+        const proOfferings = purchaseManager.offerings.flatMap(offering => 
+          offering.availablePackages.filter(pkg => pkg.product.identifier === '01')
+        );
+        
+        if (proOfferings.length > 0) {
+          formattedProducts.push({
+            productId: proOfferings[0].product.identifier, // Use product.identifier
+            title: proOfferings[0].product.title,
+            localizedPrice: proOfferings[0].product.priceString
+          });
+        }
+        
+        // Add homeowner plan (second in the list)
+        const homeownerOfferings = purchaseManager.offerings.flatMap(offering => 
+          offering.availablePackages.filter(pkg => pkg.product.identifier === '00')
+        );
+        
+        if (homeownerOfferings.length > 0) {
+          formattedProducts.push({
+            productId: homeownerOfferings[0].product.identifier, // Use product.identifier
+            title: homeownerOfferings[0].product.title,
+            localizedPrice: homeownerOfferings[0].product.priceString
+          });
+        }
+        
+        setProducts(formattedProducts);
+        
       } catch (err) {
         console.error('Failed to initialize products:', err);
         setError('Failed to load subscription options');
@@ -153,10 +186,7 @@ export const SubscriptionScreen = observer(() => {
     };
 
     initializeProducts();
-    return () => setIsLoading(false);
   }, []);
-
-  const products = toJS(purchaseManager.products || []);
 
   const handleSubscribe = async (product: Product) => {
     try {
@@ -171,15 +201,23 @@ export const SubscriptionScreen = observer(() => {
   };
 
   const handleRestorePurchases = async () => {
-    await purchaseManager.restorePurchases();
+    try {
+      setIsLoading(true);
+      await purchaseManager.restorePurchases();
+      Alert.alert('Purchases Restored', 'Your purchases have been restored successfully.');
+    } catch (error) {
+      Alert.alert('Restore Failed', 'Unable to restore purchases. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleManageSubscriptions = () => {
     if (Platform.OS === 'ios') {
-        Linking.openURL('https://apps.apple.com/account/subscriptions');
+      Linking.openURL('https://apps.apple.com/account/subscriptions');
     } else {
-        // For Android
-        Linking.openURL('https://play.google.com/store/account/subscriptions');
+      // For Android
+      Linking.openURL('https://play.google.com/store/account/subscriptions');
     }
   };
 

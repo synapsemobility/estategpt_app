@@ -343,7 +343,7 @@ export const PaymentMethodsScreen: React.FC = () => {
             disabled={loading}
           >
             <LinearGradient
-              colors={['#777777', '#2A75F3']}
+              colors={['#555555', '#333333']}  // Changed from ['#777777', '#2A75F3'] to dark grays
               style={styles.addButtonGradient}
             >
               <Icon name="add" size={22} color="#FFFFFF" />
@@ -489,7 +489,7 @@ const styles = StyleSheet.create({
   addButton: {
     borderRadius: 12,
     overflow: 'hidden',
-    shadowColor: '#4285F4',
+    shadowColor: '#333333',  // Changed from '#4285F4' to dark gray
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 6,
@@ -517,11 +517,11 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: '#4285F4',
+    backgroundColor: '#333333',  // Changed from '#4285F4' to dark gray
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 20,
-    shadowColor: '#4285F4',
+    shadowColor: '#333333',  // Changed from '#4285F4' to dark gray
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 6,
@@ -544,11 +544,11 @@ const styles = StyleSheet.create({
   emptyStateButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#4285F4',
+    backgroundColor: '#333333',  // Changed from '#4285F4' to dark gray
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 10,
-    shadowColor: '#4285F4',
+    shadowColor: '#333333',  // Changed from '#4285F4' to dark gray
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,

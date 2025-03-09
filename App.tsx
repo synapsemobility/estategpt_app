@@ -11,6 +11,7 @@ import './src/config/amplify';
 import { PurchaseManager, PurchaseManagerContext } from './src/services/PurchaseManager';
 import { NotificationService } from './src/services/NotificationService';
 import { ProStatusProvider } from './src/contexts/ProStatusContext';
+import { RevenueCatProvider } from './src/services/PurchaseManager/useRevenueCatManager';
 
 // Configure Amplify
 Amplify.configure(awsconfig);
@@ -30,7 +31,9 @@ const App = () => {
           <Authenticator.Provider>
             <PurchaseManagerContext.Provider value={purchaseManager}>
               <ProStatusProvider>
-                <CustomAuthenticator />
+                <RevenueCatProvider>
+                  <CustomAuthenticator />
+                </RevenueCatProvider>
               </ProStatusProvider>
             </PurchaseManagerContext.Provider>
           </Authenticator.Provider>

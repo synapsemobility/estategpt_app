@@ -356,7 +356,7 @@ const OnboardingScreen: React.FC = () => {
               disabled={isSubmitting}
             >
               <LinearGradient
-                colors={['#5271FF', '#4254CC']}
+                colors={['#777777', '#000000']}
                 style={styles.nextButtonGradient}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
@@ -414,11 +414,11 @@ const styles = StyleSheet.create({
     marginHorizontal: 3,
   },
   progressDotActive: {
-    backgroundColor: '#5271FF',
+    backgroundColor: '#333333', // Changed from #5271FF to dark gray
   },
   progressText: {
     fontSize: 14,
-    color: '#767676',
+    color: '#777777', // Slightly lighter gray
   },
   backButton: {
     position: 'absolute',
@@ -439,12 +439,12 @@ const styles = StyleSheet.create({
   questionTitle: {
     fontSize: 26,
     fontWeight: '700',
-    color: '#2C2C2C',
+    color: '#333333', // Changed from #2C2C2C to dark gray
     marginBottom: 10,
   },
   questionSubtitle: {
     fontSize: 16,
-    color: '#767676',
+    color: '#666666', // Changed from #767676 to medium gray
     marginBottom: 30,
   },
   textInput: {
@@ -455,7 +455,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 16,
     fontSize: 17,
-    color: '#2C2C2C',
+    color: '#333333', // Changed from #2C2C2C to dark gray
     backgroundColor: '#F8F8F8',
     marginBottom: 24,
   },
@@ -475,12 +475,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8F8F8',
   },
   selectedOption: {
-    borderColor: '#5271FF',
-    backgroundColor: '#5271FF',
+    borderColor: '#333333', // Changed from #5271FF to dark gray
+    backgroundColor: '#333333', // Changed from #5271FF to dark gray
   },
   optionText: {
     fontSize: 16,
-    color: '#2C2C2C',
+    color: '#333333', // Changed from #2C2C2C to dark gray
   },
   selectedOptionText: {
     color: '#FFFFFF',
@@ -490,14 +490,14 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   errorText: {
-    color: '#FF4444',
+    color: '#FF4444', // Keep red for errors
     fontSize: 14,
     marginBottom: 16,
   },
   nextButton: {
     width: '100%',
     marginTop: 10,
-    shadowColor: '#5271FF',
+    shadowColor: '#333333', // Changed from #5271FF to dark gray
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 8,
@@ -521,7 +521,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
     textAlign: 'center',
     fontSize: 14,
-    color: '#767676',
+    color: '#777777', // Changed from #767676 to lighter gray
   },
 });
 

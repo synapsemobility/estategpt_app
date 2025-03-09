@@ -71,9 +71,9 @@ export const ChatScreen: React.FC<ChatScreenProps> = observer(({ route }) => {
   const [currentHintIndex, setCurrentHintIndex] = useState(0);
 
   const homiePrompts = [
-    "Find nearby handyman\navailable this weekend",
-    "Kitchen remodel quotes\nfor single family home",
-    "Compare lifetime costs\nof HVAC systems"
+    "Compare lifetime costs\nof HVAC systems",
+    "Average water bill\nfor 3-bedroom house",
+    "Best time of year\nto clean gutters"
   ];
 
   const hackItPrompts = [

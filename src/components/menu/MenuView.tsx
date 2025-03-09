@@ -17,20 +17,19 @@ import { MenuViewProps } from '../../types/menu.types';
 import { useNavigation, NavigationProp, useFocusEffect, CommonActions } from '@react-navigation/native';
 import { useAuthenticator } from '@aws-amplify/ui-react-native';
 import { useProStatus } from '../../contexts/ProStatusContext';
-import { LinearGradient } from 'expo-linear-gradient';
 
 const { width, height } = Dimensions.get('window');
 const MENU_WIDTH = Math.min(width * 0.85, 320);
 
 // Define consistent colors to match app theme
 const COLORS = {
-  primary: '#777777',
-  primaryDark: '#000000',
-  accent: '#FF9500',
+  primary: '#333333',
+  primaryDark: '#222222',
+  accent: '#333333',
   background: '#FFFFFF',
-  text: '#2C3E50',
-  textSecondary: '#6A7A8C',
-  border: '#E1E8ED',
+  text: '#333333',
+  textSecondary: '#777777',
+  border: '#EEEEEE',
   error: '#E74C3C',
 };
 
@@ -173,21 +172,16 @@ export const MenuView: React.FC<MenuViewProps> = ({
         onPress={() => handleMenuItemPress(item.route)}
         activeOpacity={0.7}
       >
-        <View style={[
-          styles.menuItemIconContainer,
-          { backgroundColor: isDangerItem ? `${item.color}15` : item.color ? `${item.color}15` : '#F5F7FA' }
-        ]}>
-          <Icon
-            name={item.icon}
-            size={20}
-            color={item.color || COLORS.text}
-          />
-        </View>
+        <Icon
+          name={item.icon}
+          size={20}
+          color={isDangerItem ? COLORS.error : COLORS.text}
+          style={styles.menuItemIcon}
+        />
         <Text
           style={[
             styles.menuItemText,
-            isDangerItem && styles.dangerText,
-            item.color && !isDangerItem && { color: item.color }
+            isDangerItem && styles.dangerText
           ]}
         >
           {item.title}
@@ -195,8 +189,8 @@ export const MenuView: React.FC<MenuViewProps> = ({
         {!isDangerItem && (
           <Icon
             name="chevron-forward"
-            size={18}
-            color={COLORS.textSecondary}
+            size={16}
+            color="#CCCCCC"
             style={styles.chevron}
           />
         )}
@@ -231,16 +225,11 @@ export const MenuView: React.FC<MenuViewProps> = ({
           },
         ]}
       >
-        {/* Menu Header with Gradient */}
-        <LinearGradient
-          colors={[COLORS.primary, COLORS.primaryDark]}
-          style={styles.menuHeaderGradient}
-        >
+        {/* Menu Header */}
+        <View style={styles.menuHeader}>
           <View style={styles.menuHeaderContent}>
             <View style={styles.avatarContainer}>
-              <View style={styles.avatar}>
-                <Text style={styles.avatarText}>{userName?.[0]?.toUpperCase() || 'U'}</Text>
-              </View>
+              <Text style={styles.avatarText}>{userName?.[0]?.toUpperCase() || 'U'}</Text>
             </View>
             
             <View style={styles.userInfoContainer}>
@@ -261,7 +250,7 @@ export const MenuView: React.FC<MenuViewProps> = ({
           >
             <Icon name="close" size={22} color="#FFFFFF" />
           </TouchableOpacity>
-        </LinearGradient>
+        </View>
         
         {/* Menu Content */}
         <ScrollView 
@@ -331,38 +320,37 @@ const styles = StyleSheet.create({
     zIndex: 1001,
     shadowColor: '#000',
     shadowOffset: { width: 2, height: 0 },
-    shadowOpacity: 0.2,
-    shadowRadius: 10,
+    shadowOpacity: 0.15,
+    shadowRadius: 15,
     elevation: 10,
     flexDirection: 'column',
+    borderTopRightRadius: 24,
+    borderBottomRightRadius: 24,
   },
-  menuHeaderGradient: {
+  menuHeader: {
     paddingTop: Platform.OS === 'ios' ? 50 : 40,
-    paddingBottom: 20,
-    paddingHorizontal: 20,
+    paddingBottom: 24,
+    paddingHorizontal: 24,
     position: 'relative',
+    backgroundColor: COLORS.primary,
   },
   menuHeaderContent: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   avatarContainer: {
-    marginRight: 16,
-  },
-  avatar: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    width: 48,
+    height: 48,
+    borderRadius: 48,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.5)',
+    marginRight: 16,
   },
   avatarText: {
-    fontSize: 28,
+    fontSize: 22,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: COLORS.primary,
   },
   userInfoContainer: {
     flex: 1,
@@ -371,30 +359,31 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     color: '#FFFFFF',
-    marginBottom: 2,
+    marginBottom: 4,
   },
   userEmail: {
-    fontSize: 14,
+    fontSize: 13,
     color: 'rgba(255, 255, 255, 0.8)',
   },
   proBadge: {
     marginTop: 8,
-    backgroundColor: COLORS.accent,
+    backgroundColor: '#FFFFFF',
     paddingHorizontal: 8,
     paddingVertical: 2,
-    borderRadius: 4,
+    borderRadius: 3,
     alignSelf: 'flex-start',
   },
   proBadgeText: {
-    color: '#FFFFFF',
-    fontWeight: '600',
-    fontSize: 12,
+    color: COLORS.primary,
+    fontWeight: '700',
+    fontSize: 10,
+    letterSpacing: 1,
   },
   closeButton: {
     position: 'absolute',
     top: Platform.OS === 'ios' ? 50 : 40,
     right: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: 'rgba(0, 0, 0, 0.2)',
     borderRadius: 16,
     width: 32,
     height: 32,
@@ -403,65 +392,72 @@ const styles = StyleSheet.create({
   },
   menuContent: {
     flex: 1,
+    paddingTop: 8,
   },
   section: {
-    paddingTop: 16,
-    paddingBottom: 8,
+    paddingVertical: 8,
   },
   sectionTitle: {
-    fontSize: 13,
-    fontWeight: '600',
+    fontSize: 12,
+    letterSpacing: 1,
+    fontWeight: '700',
     color: COLORS.textSecondary,
     paddingHorizontal: 24,
     paddingBottom: 8,
+    paddingTop: 16,
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 14,
     paddingHorizontal: 24,
+    marginVertical: 2,
   },
-  menuItemIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
+  menuItemIcon: {
+    width: 20,
     marginRight: 16,
   },
   menuItemText: {
     fontSize: 16,
     color: COLORS.text,
+    fontWeight: '400',
     flex: 1,
+    letterSpacing: 0.2,
   },
   dangerItem: {
-    marginVertical: 4,
+    marginVertical: 2,
   },
   dangerText: {
     color: COLORS.error,
   },
   dangerSection: {
-    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopWidth: 1,
     borderTopColor: COLORS.border,
     marginTop: 8,
     paddingTop: 16,
+    marginHorizontal: 24,
   },
   chevron: {
     marginLeft: 8,
+    opacity: 0.6,
   },
   menuFooter: {
-    padding: 20,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: COLORS.border,
+    padding: 24,
     alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
+    marginHorizontal: 0,
   },
   footerLogo: {
-    width: 32,
-    height: 32,
+    width: 24,
+    height: 24,
     marginBottom: 8,
+    opacity: 0.8,
   },
   footerText: {
     fontSize: 12,
     color: COLORS.textSecondary,
+    fontWeight: '400',
+    letterSpacing: 0.5,
   }
 });

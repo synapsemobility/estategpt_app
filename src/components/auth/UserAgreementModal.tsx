@@ -58,7 +58,7 @@ export const UserAgreementModal: React.FC<UserAgreementModalProps> = ({ isVisibl
         <View style={styles.modalContent}>
           <View style={styles.header}>
             <View style={styles.headerIconContainer}>
-              <Icon name="document-text" size={24} color="#2E5C8D" />
+              <Icon name="document-text" size={24} color="#333333" />
             </View>
             <Text style={styles.title}>User Agreement</Text>
           </View>
@@ -134,7 +134,7 @@ export const UserAgreementModal: React.FC<UserAgreementModalProps> = ({ isVisibl
             {!scrolledToBottom && (
               <View style={styles.scrollPrompt}>
                 <Text style={styles.scrollPromptText}>Please scroll to the bottom to continue</Text>
-                <Icon name="arrow-down" size={20} color="#2E5C8D" />
+                <Icon name="arrow-down" size={20} color="#777777" />
               </View>
             )}
             
@@ -147,7 +147,7 @@ export const UserAgreementModal: React.FC<UserAgreementModalProps> = ({ isVisibl
               disabled={!scrolledToBottom}
             >
               <LinearGradient
-                colors={scrolledToBottom ? ['#2E5C8D', '#1E3F66'] : ['#A0A0A0', '#808080']}
+                colors={scrolledToBottom ? ['#555555', '#333333'] : ['#A0A0A0', '#808080']}
                 style={styles.gradientButton}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
@@ -209,7 +209,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(46, 92, 141, 0.1)',
+    backgroundColor: 'rgba(51, 51, 51, 0.08)', // Changed from blue to dark gray
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -217,7 +217,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#2C3E50',
+    color: '#333333', // Changed from #2C3E50 to dark gray
   },
   scrollView: {
     padding: 20,
@@ -226,26 +226,26 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#2C3E50',
+    color: '#333333', // Changed from #2C3E50 to dark gray
     marginBottom: 16,
   },
   sectionSubtitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#2C3E50',
+    color: '#333333', // Changed from #2C3E50 to dark gray
     marginTop: 16,
     marginBottom: 8,
   },
   paragraph: {
     fontSize: 15,
     lineHeight: 22,
-    color: '#4A5568',
+    color: '#666666', // Changed from #4A5568 to medium gray
     marginBottom: 12,
   },
   paragraphLast: {
     fontSize: 15,
     lineHeight: 22,
-    color: '#4A5568',
+    color: '#666666', // Changed from #4A5568 to medium gray
     marginBottom: 20,
     marginTop: 20,
   },
@@ -262,12 +262,17 @@ const styles = StyleSheet.create({
   },
   scrollPromptText: {
     fontSize: 14,
-    color: '#2E5C8D',
+    color: '#777777', // Changed from #2E5C8D to lighter gray
     marginRight: 8,
   },
   acceptButton: {
     borderRadius: 12,
     overflow: 'hidden',
+    shadowColor: '#333333', // Added shadow color to match other elements
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
   },
   acceptButtonDisabled: {
     opacity: 0.7,
