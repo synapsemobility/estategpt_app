@@ -472,7 +472,7 @@ export const ScheduledCallsScreen = () => {
   const renderEmptyComponent = () => (
     <View style={styles.emptyContainer}>
       <Image 
-        source={require('../../../../assets/images/empty-calendar.png')}
+        source={require('../../../../assets/images/empty-calendar.jpg')}
         style={styles.emptyImage}
         resizeMode="contain"
       />

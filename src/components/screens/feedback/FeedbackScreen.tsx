@@ -49,7 +49,7 @@ export const FeedbackScreen = () => {
         {/* Hero Section with Image */}
         <View style={styles.heroSection}>
           <Image 
-            source={require('../../../../assets/images/feedback-hero.png')} 
+            source={require('../../../../assets/images/feedback-hero.jpg')} 
             style={styles.heroImage} 
             resizeMode="contain"
           />
