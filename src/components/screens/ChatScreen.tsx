@@ -294,7 +294,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = observer(({ route }) => {
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.container}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 30 : 0}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 30 : 30}
       >
         <MenuView
           isMenuOpen={isMenuOpen}
@@ -310,11 +310,6 @@ export const ChatScreen: React.FC<ChatScreenProps> = observer(({ route }) => {
               onPress={() => setIsMenuOpen(!isMenuOpen)}
             >
               <Icon name="menu" size={24} color="#333" />
-              {showProHint && (
-                <View style={styles.proHintDot}>
-                  <Icon name="star" size={8} color="#FFF" />
-                </View>
-              )}
             </TouchableOpacity>
             
             <View style={styles.titleContainer}>

@@ -60,7 +60,7 @@ export const MenuView: React.FC<MenuViewProps> = ({
   // Group menu items by category
   const groupedItems = {
     main: menuItems.filter(item => 
-      !['SignOut', 'DeleteAccount', 'User', 'Subscription', 'Feedback'].includes(item.route)
+      !['SignOut', 'DeleteAccount', 'User', 'Subscription', 'Feedback', 'ContactFounder'].includes(item.route)
     ),
     account: menuItems.filter(item => 
       ['User', 'Subscription', 'Feedback', 'ContactFounder'].includes(item.route)

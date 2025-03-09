@@ -784,13 +784,22 @@ export const CallProScreen = () => {
       <View style={styles.serviceSelectionContainer}>
         <SafeAreaView style={styles.serviceSelectionSafeArea}>
           <View style={styles.serviceSelectionHeader}>
-            {/* <Text style={styles.serviceSelectionTitle}>Select a Service</Text> */}
+            <Text style={styles.serviceSelectionTitle}>Find your pro</Text>
             <TouchableOpacity 
               onPress={() => setShowServiceSelection(false)}
               style={styles.closeButton}
+              hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
             >
-              <Icon name="close" size={24} color="#555555" />
+              <Icon name="close" size={24} color="#333333" />
             </TouchableOpacity>
+          </View>
+          
+          {/* Subheader with search bar look */}
+          <View style={styles.serviceSearchContainer}>
+            <View style={styles.searchBarFaux}>
+              <Icon name="search" size={18} color="#777777" />
+              <Text style={styles.searchPlaceholder}>Browse all services</Text>
+            </View>
           </View>
           
           <FlatList
@@ -798,31 +807,83 @@ export const CallProScreen = () => {
             keyExtractor={(item, index) => `category-${index}`}
             renderItem={({item: serviceCategory, index: categoryIndex}) => (
               <View style={styles.serviceCategory}>
-                <Text style={styles.categoryTitle}>{serviceCategory.category}</Text>
+                <View style={styles.categoryHeaderContainer}>
+                  <Text style={styles.categoryTitle}>{serviceCategory.category}</Text>
+                  <View style={styles.categoryLine} />
+                </View>
                 
                 {serviceCategory.items.map((service, serviceIndex) => (
                   <TouchableOpacity 
                     key={`service-${categoryIndex}-${serviceIndex}`}
-                    style={styles.serviceCard} 
+                    style={styles.serviceCardNew} 
+                    activeOpacity={0.7}
                     onPress={() => selectService(service.title, service.price)}
                   >
-                    <View style={[styles.serviceIconContainer, { backgroundColor: COLORS.primary }]}>
-                      <Icon name={service.icon} size={24} color="#FFFFFF" />
-                    </View>
-                    <View style={styles.serviceTextContainer}>
-                      <Text style={styles.serviceTitle}>{service.title}</Text>
-                      <Text style={styles.serviceDescription}>{service.description}</Text>
-                      <View style={styles.servicePriceContainer}>
-                        <Icon name="pricetag-outline" size={14} color={COLORS.primary} />
-                        <Text style={styles.servicePriceText}>{service.price}</Text>
+                    <View style={styles.serviceCardInner}>
+                      <View style={[
+                        styles.serviceIconContainerNew, 
+                        { backgroundColor: 
+                          categoryIndex % 3 === 0 ? '#FF9500' : 
+                          categoryIndex % 3 === 1 ? '#5271FF' : 
+                          '#46BD84' 
+                        }
+                      ]}>
+                        <Icon name={service.icon} size={26} color="#FFFFFF" />
+                      </View>
+                      
+                      <View style={styles.serviceTextContainerNew}>
+                        <Text style={styles.serviceTitleNew}>{service.title}</Text>
+                        <Text style={styles.serviceDescription} numberOfLines={2}>
+                          {service.description}
+                        </Text>
+                        
+                        <View style={styles.servicePriceContainer}>
+                          <Icon name="pricetag-outline" size={14} color={
+                            categoryIndex % 3 === 0 ? '#FF9500' : 
+                            categoryIndex % 3 === 1 ? '#5271FF' : 
+                            '#46BD84'
+                          } />
+                          <Text style={[
+                            styles.servicePriceText, 
+                            { color: 
+                              categoryIndex % 3 === 0 ? '#FF9500' : 
+                              categoryIndex % 3 === 1 ? '#5271FF' : 
+                              '#46BD84' 
+                            }
+                          ]}>
+                            {service.price}
+                          </Text>
+                        </View>
+                      </View>
+                      
+                      <View style={styles.serviceSelectArrow}>
+                        <Icon 
+                          name="chevron-forward" 
+                          size={20} 
+                          color={
+                            categoryIndex % 3 === 0 ? '#FF9500' : 
+                            categoryIndex % 3 === 1 ? '#5271FF' : 
+                            '#46BD84'
+                          } 
+                        />
                       </View>
                     </View>
                   </TouchableOpacity>
                 ))}
               </View>
             )}
-            contentContainerStyle={styles.serviceListContentContainer}
-            showsVerticalScrollIndicator={true}
+            contentContainerStyle={styles.serviceListContentContainerNew}
+            showsVerticalScrollIndicator={false}
+            ListHeaderComponent={() => (
+              <View style={styles.serviceListHeader}>
+                <Text style={styles.serviceListHeaderText}>
+                  Connect with the right expert for your needs
+                </Text>
+                <Text style={styles.serviceListSubheaderText}>
+                  All consultations start with a scheduled 15 min video call, which can include followups later too.
+                </Text>
+              </View>
+            )}
           />
         </SafeAreaView>
       </View>

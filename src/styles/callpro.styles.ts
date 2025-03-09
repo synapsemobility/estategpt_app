@@ -1176,5 +1176,131 @@ export const styles = StyleSheet.create({
       fontWeight: '600',
     },
     
-    // ...existing styles...
+    // Service Selection Container
+    serviceSelectionContainer: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: '#FFFFFF',
+      zIndex: 1000,
+    },
+    serviceSelectionSafeArea: {
+      flex: 1,
+    },
+    serviceSelectionHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingHorizontal: 20,
+      paddingVertical: 16,
+      borderBottomWidth: 1,
+      borderBottomColor: '#F0F0F0',
+    },
+    serviceSelectionTitle: {
+      marginTop: 80,
+      fontSize: 22,
+      fontWeight: '700',
+      color: '#333333',
+    },
+    serviceSearchContainer: {
+      paddingHorizontal: 20,
+      paddingVertical: 12,
+      borderBottomWidth: 1,
+      borderBottomColor: '#F0F0F0',
+      marginBottom: 10,
+    },
+    searchBarFaux: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: '#F5F7FA',
+      padding: 12,
+      borderRadius: 12,
+    },
+    searchPlaceholder: {
+      fontSize: 16,
+      color: '#777777',
+      marginLeft: 8,
+    },
+    serviceListHeader: {
+      paddingHorizontal: 20,
+      paddingVertical: 16,
+    },
+    serviceListHeaderText: {
+      fontSize: 18,
+      fontWeight: '600',
+      color: '#333333',
+      marginBottom: 8,
+    },
+    serviceListSubheaderText: {
+      fontSize: 14,
+      color: '#777777',
+      lineHeight: 20,
+      marginBottom: 10,
+    },
+    serviceListContentContainerNew: {
+      paddingBottom: 100,
+    },
+    categoryHeaderContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 20,
+      marginVertical: 16,
+    },
+    categoryTitle: {
+      fontSize: 18,
+      fontWeight: '700',
+      color: '#333333',
+      marginRight: 12,
+    },
+    categoryLine: {
+      flex: 1,
+      height: 1,
+      backgroundColor: '#EEEEEE',
+    },
+    serviceCardNew: {
+      marginHorizontal: 20,
+      marginBottom: 16,
+      borderRadius: 16,
+      backgroundColor: '#FFFFFF',
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.08,
+      shadowRadius: 8,
+      elevation: 4,
+      overflow: 'hidden',
+    },
+    serviceCardInner: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      padding: 20,
+    },
+    serviceIconContainerNew: {
+      width: 56,
+      height: 56,
+      borderRadius: 16,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginRight: 16,
+    },
+    serviceTextContainerNew: {
+      flex: 1,
+      paddingRight: 10,
+    },
+    serviceTitleNew: {
+      fontSize: 17,
+      fontWeight: '600',
+      color: '#333333',
+      marginBottom: 6,
+    },
+    serviceSelectArrow: {
+      width: 24,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    serviceBottomBar: {
+      height: 4,
+      width: '100%',
+    },
   });
