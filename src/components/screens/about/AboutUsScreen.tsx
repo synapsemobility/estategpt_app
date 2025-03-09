@@ -168,7 +168,7 @@ export const AboutUsScreen = () => {
         {/* Hero Section with modern illustration */}
         <View style={styles.heroSection}>
           <Image
-            source={require('../../../../assets/images/house-illustration.jpg')}
+            source={require('../../../../assets/images/house.jpg')}
             style={styles.heroImage}
             resizeMode="contain"
           />
