@@ -342,6 +342,8 @@ PODS:
   - nanopb/decode (3.30910.0)
   - nanopb/encode (3.30910.0)
   - PromisesObjC (2.4.0)
+  - PurchasesHybridCommon (13.22.0):
+    - RevenueCat (= 5.18.0)
   - RCT-Folly (2024.01.01.00):
     - boost
     - DoubleConversion
@@ -1874,6 +1876,7 @@ PODS:
     - React-logger (= 0.76.7)
     - React-perflogger (= 0.76.7)
     - React-utils (= 0.76.7)
+  - RevenueCat (5.18.0)
   - RNCAsyncStorage (1.23.1):
     - React-Core
   - RNCPicker (2.9.0):
@@ -1893,6 +1896,9 @@ PODS:
   - RNInAppBrowser (3.7.0):
     - React-Core
   - RNPermissions (5.2.5):
+    - React-Core
+  - RNPurchases (8.8.0):
+    - PurchasesHybridCommon (= 13.22.0)
     - React-Core
   - RNScreens (4.4.0):
     - DoubleConversion
@@ -2059,6 +2065,7 @@ DEPENDENCIES:
   - RNIap (from `../node_modules/react-native-iap`)
   - RNInAppBrowser (from `../node_modules/react-native-inappbrowser-reborn`)
   - RNPermissions (from `../node_modules/react-native-permissions`)
+  - RNPurchases (from `../node_modules/react-native-purchases`)
   - RNScreens (from `../node_modules/react-native-screens`)
   - "stripe-react-native (from `../node_modules/@stripe/stripe-react-native`)"
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
@@ -2076,6 +2083,8 @@ SPEC REPOS:
     - libwebp
     - nanopb
     - PromisesObjC
+    - PurchasesHybridCommon
+    - RevenueCat
     - SDWebImage
     - SDWebImageWebPCoder
     - SocketRocket
@@ -2281,6 +2290,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-inappbrowser-reborn"
   RNPermissions:
     :path: "../node_modules/react-native-permissions"
+  RNPurchases:
+    :path: "../node_modules/react-native-purchases"
   RNScreens:
     :path: "../node_modules/react-native-screens"
   stripe-react-native:
@@ -2326,6 +2337,7 @@ SPEC CHECKSUMS:
   libwebp: 02b23773aedb6ff1fd38cec7a77b81414c6842a8
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
+  PurchasesHybridCommon: 16367f792481e8e2d61101ecb607b566937aa67f
   RCT-Folly: 84578c8756030547307e4572ab1947de1685c599
   RCTDeprecation: 7691283dd69fed46f6653d376de6fa83aaad774c
   RCTRequired: eac044a04629288f272ee6706e31f81f3a2b4bfe
@@ -2387,6 +2399,7 @@ SPEC CHECKSUMS:
   React-utils: 8742420880b3d5d8f8a5d347b9d24c0b9160bc4d
   ReactCodegen: fe2ffeda5a1ad1b6f2bb4f676ae60da296630ce4
   ReactCommon: 885ac625dd73cd6585ca5c1ad5c09e1ce848b015
+  RevenueCat: e825836f5d6baa870c53d7281be25a5fd91abd91
   RNCAsyncStorage: aa75595c1aefa18f868452091fa0c411a516ce11
   RNCPicker: 0e683a85cae99a8a739e97a49f269a4630de0a01
   RNDateTimePicker: 818460dc31b0dc5ec58289003e27dd8d022fb79c
@@ -2395,6 +2408,7 @@ SPEC CHECKSUMS:
   RNIap: f94647b3a3dbd5fa08ad7ed847eb588aa5fe95fe
   RNInAppBrowser: 6d3eb68d471b9834335c664704719b8be1bfdb20
   RNPermissions: 92fa8c09d19da18e4f5e55971d666e1a2d1f480a
+  RNPurchases: d1f57477a73970b532790a85f48d1611d7b5b030
   RNScreens: 9d4263adf1791e32fdc1a7c8aac8a401f75e83da
   SDWebImage: f84b0feeb08d2d11e6a9b843cb06d75ebf5b8868
   SDWebImageWebPCoder: e38c0a70396191361d60c092933e22c20d5b1380

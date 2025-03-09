@@ -98,3 +98,9 @@ npx expo run:android
 
 
 
+## Troubleshoot
+Existing package com.singaporv.estategpt signatures do not match newer version; ignoring!]
+```
+adb uninstall com.singaporv.estategpt
+npx expo run:android --variant playRelease
+```

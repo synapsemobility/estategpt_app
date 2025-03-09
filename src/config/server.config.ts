@@ -41,6 +41,12 @@ export const ServerEnvironment = {
   // Other API configurations grouped by domain
   professionals: {
     baseURL: 'https://chat.estategpt.io/api/professionals'
+  },
+  
+  // Add onboarding endpoint
+  onboarding: {
+    baseURL: 'https://chat.estategpt.io/user',
+    saveUserProfile: 'https://chat.estategpt.io/user/onboarding'
   }
 };
 
@@ -48,3 +54,4 @@ export const ServerEnvironment = {
 export const getApiUrl = () => ServerEnvironment.baseURL;
 export const getPaymentApiUrl = () => ServerEnvironment.payment.baseURL;
 export const getContactFounderUrl = () => ServerEnvironment.contactFounderEndpoint;
+export const getOnboardingApiUrl = () => ServerEnvironment.onboarding.baseURL;

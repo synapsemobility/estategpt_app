@@ -16,15 +16,17 @@ import { CallProConfirmationScreen } from '../screens/callpro/CallProConfirmatio
 import { ScheduledCallsScreen } from '../screens/callpro/ScheduledCallsScreen';
 import { ProRequestsScreen } from '../screens/callpro/ProRequestsScreen';
 import { VideoCallScreen } from '../screens/callpro/VideoCallScreen';
-import { TestVideoCallScreen } from '../screens/callpro/TestVideoCallScreen';
 import { ProMeetingsScreen } from '../screens/callpro/ProMeetingsScreen'; 
 import { ProProfileScreen } from '../screens/professional/ProProfileScreen';
 import { BecomeProScreen } from '../screens/professional/BecomeProScreen';
 import { UserAgreementModal, hasAcceptedUserAgreement } from './UserAgreementModal';
 import { AddPaymentCardScreen } from '../screens/payment/AddPaymentCardScreen';
 import { PaymentMethodsScreen } from '../screens/payment/PaymentMethodsScreen';
-import ContactFounderScreen from '../screens/ContactFounderScreen'; 
+import ContactFounderScreen from '../screens/ContactFounderScreen';
+import OnboardingScreen from './OnboardingScreen';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
+// Add Onboarding to the RootStackParamList
 type RootStackParamList = {
   Chat: { userID: string | undefined };
   AboutUs: undefined;
@@ -47,11 +49,23 @@ type RootStackParamList = {
   AddPaymentCard: undefined;
   PaymentMethods: undefined;
   CallProConfirmation: undefined;
-  ContactFounder: undefined; // Add this type definition
+  ContactFounder: undefined;
+  Onboarding: undefined; // Add this type definition
 };
 
 // Initialize the stack navigator with your route param list
 const Stack = createNativeStackNavigator<RootStackParamList>();
+
+// Helper function to check if user has completed onboarding
+const hasCompletedOnboarding = async (userId: string): Promise<boolean> => {
+  try {
+    const onboardingStatus = await AsyncStorage.getItem(`onboarding_${userId}`);
+    return onboardingStatus === 'completed';
+  } catch (error) {
+    console.error('Error checking onboarding status:', error);
+    return false;
+  }
+};
 
 // Create a separate header right component
 const HeaderRight = () => {
@@ -71,24 +85,44 @@ const AppContent = () => {
   const { user } = useAuthenticator();
   const [showAgreement, setShowAgreement] = useState(false);
   const [agreementAccepted, setAgreementAccepted] = useState(false);
+  const [onboardingComplete, setOnboardingComplete] = useState<boolean | null>(null);
+  const [initialRoute, setInitialRoute] = useState<keyof RootStackParamList | null>(null);
   
   useEffect(() => {
-    // Check if user has already accepted the agreement
-    const checkAgreementStatus = async () => {
+    // Check user agreement and onboarding status
+    const checkUserStatus = async () => {
       const hasAccepted = await hasAcceptedUserAgreement();
-      if (hasAccepted) {
-        setAgreementAccepted(true);
-      } else {
+      
+      if (!hasAccepted) {
         setShowAgreement(true);
+        setAgreementAccepted(false);
+        return;
+      }
+      
+      setAgreementAccepted(true);
+      
+      // Check if user has completed onboarding
+      if (user?.username) {
+        const completed = await hasCompletedOnboarding(user.username);
+        setOnboardingComplete(completed);
+        setInitialRoute(completed ? 'Chat' : 'Onboarding');
       }
     };
     
-    checkAgreementStatus();
-  }, []);
+    checkUserStatus();
+  }, [user?.username]);
   
   const handleAcceptAgreement = () => {
     setShowAgreement(false);
     setAgreementAccepted(true);
+    
+    // After agreement is accepted, check onboarding status
+    if (user?.username) {
+      hasCompletedOnboarding(user.username).then(completed => {
+        setOnboardingComplete(completed);
+        setInitialRoute(completed ? 'Chat' : 'Onboarding');
+      });
+    }
   };
   
   // If agreement hasn't been accepted yet, don't render the main app
@@ -114,14 +148,32 @@ const AppContent = () => {
       </View>
     );
   }
+  
+  // If we're still checking onboarding status, show loading
+  if (initialRoute === null) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#555555" />
+      </View>
+    );
+  }
 
   return (
     <Stack.Navigator
+      initialRouteName={initialRoute}
       screenOptions={{
         headerShown: false,
         contentStyle: { backgroundColor: '#fff' }
       }}
     >
+      <Stack.Screen 
+        name="Onboarding" 
+        component={OnboardingScreen}
+        options={{ 
+          headerShown: false,
+          gestureEnabled: false // Prevent swiping back during onboarding
+        }}
+      />
       <Stack.Screen 
         name="Chat" 
         component={ChatScreen}
@@ -130,6 +182,8 @@ const AppContent = () => {
           headerRight: () => <HeaderRight />
         }}
       />
+      
+      {/* Rest of your existing screens */}
       <Stack.Screen name="AboutUs" component={AboutUsScreen} />
       <Stack.Screen name="Feedback" component={FeedbackScreen} />
       <Stack.Screen name="Subscription" component={SubscriptionScreen} />
@@ -141,82 +195,15 @@ const AppContent = () => {
       <Stack.Screen name="DeleteAccount" component={DeleteAccountScreen} />
       <Stack.Screen name="CallPro" component={CallProScreen} />
       <Stack.Screen name="ScheduledCalls" component={ScheduledCallsScreen} />
-      
-      {/* Replace PendingCallsScreen with ProMeetingsScreen */}
-      <Stack.Screen 
-        name="ProMeetings" 
-        component={ProMeetingsScreen}
-        options={{ 
-          headerShown: false,
-          animation: 'slide_from_right'
-        }}
-      />
-      
-      {/* Include ProRequestsScreen */}
-      <Stack.Screen 
-        name="ProRequests" 
-        component={ProRequestsScreen}
-        options={{ 
-          headerShown: false,
-          animation: 'slide_from_right'
-        }}
-      />
-      
-      <Stack.Screen 
-        name="TestVideoCall" 
-        component={TestVideoCallScreen}
-        options={{ 
-          headerShown: true,
-          title: "Test Video Call" 
-        }} 
-      />
-      <Stack.Screen 
-        name="VideoCall" 
-        component={VideoCallScreen}
-        options={{ 
-          headerShown: false,
-          gestureEnabled: false  // Prevent accidentally swiping back during a call
-        }} 
-      />
+      <Stack.Screen name="ProMeetings" component={ProMeetingsScreen} />
+      <Stack.Screen name="ProRequests" component={ProRequestsScreen} />
+      <Stack.Screen name="VideoCall" component={VideoCallScreen} />
       <Stack.Screen name="ProProfile" component={ProProfileScreen} />
       <Stack.Screen name="BecomePro" component={BecomeProScreen} />
-      
-      {/* Payment related screens */}
-      <Stack.Screen 
-        name="PaymentMethods" 
-        component={PaymentMethodsScreen}
-        options={{ 
-          headerShown: false,
-          animation: 'slide_from_right'
-        }}
-      />
-      
-      <Stack.Screen 
-        name="AddPaymentCard" 
-        component={AddPaymentCardScreen}
-        options={{ 
-          headerShown: false, // Changed to false to use our custom header
-          animation: 'slide_from_right'
-        }}
-      />
-      
-      {/* Add this screen to the stack navigator */}
-      <Stack.Screen 
-        name="CallProConfirmation" 
-        component={CallProConfirmationScreen}
-        options={{ 
-          headerShown: false,
-          animation: 'slide_from_right'
-        }} 
-      />
-      <Stack.Screen 
-        name="ContactFounder"
-        component={ContactFounderScreen}
-        options={{ 
-          headerShown: false,
-          animation: 'slide_from_right'
-        }}
-      />
+      <Stack.Screen name="PaymentMethods" component={PaymentMethodsScreen} />
+      <Stack.Screen name="AddPaymentCard" component={AddPaymentCardScreen} />
+      <Stack.Screen name="CallProConfirmation" component={CallProConfirmationScreen} />
+      <Stack.Screen name="ContactFounder" component={ContactFounderScreen} />
     </Stack.Navigator>
   );
 };
