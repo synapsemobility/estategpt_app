@@ -53,6 +53,7 @@ npx expo run:android
 2. Test release build locally on simulator (Before uploading to Play Store): 
 ```
 npx expo run:android --variant playRelease
+npx expo run:android --variant playRelease --device
 ```
 
 3. Create abb for  Play Store upload
